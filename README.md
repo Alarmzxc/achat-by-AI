@@ -1,2 +1,2 @@
-# llm-api
-AI辅助编写的服务
+# achat
+AI辅助编写的服务，利用cloud flare的pages和workers部署的聊天网站

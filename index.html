@@ -3,1049 +3,1387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLM Chat</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230078D7' d='M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2zm-.811 3.81a1.764 1.764 0 0 0-1.25-.511c-.696 0-1.25.555-1.25 1.25c0 .22.06.428.158.614l3.342 3.342c.186-.098.394-.158.614-.158c.695 0 1.25.555 1.25 1.25c0 .22-.06.428-.158.614l-3.342 3.342a1.757 1.757 0 0 0-.614.158c-.696 0-1.25.555-1.25 1.25s.554 1.25 1.25 1.25a1.764 1.764 0 0 0 1.25-.511l5.14-5.141a1.764 1.764 0 0 0 1.25-.511c.696 0 1.25-.555 1.25-1.25s-.554-1.25-1.25-1.25a1.764 1.764 0 0 0-1.25-.511L11.19 5.81z'/%3E%3C/svg%3E" type="image/svg+xml">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https:;">
+    <title>聊天室 - Cloudflare</title>
     <style>
-        /* Basic Reset and Body Styling */
-        body {
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --primary-light: #85c1e9;
+            --secondary: #2ecc71;
+            --error: #e74c3c;
+            --warning: #f39c12;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+            --text-muted: #95a5a6;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #dee2e6;
+            --border-light: #e9ecef;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --sidebar-width: 320px;
+        }
+        
+        * {
+            box-sizing: border-box;
             margin: 0;
-            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* Windows-like font stack */
-            line-height: 1.6;
-            /* 天蓝色渐变背景 */
-            background: linear-gradient(to bottom right, #87CEEB, #E0FFFF); /* From SkyBlue to LightCyan */
-            color: #333;
-            display: flex;
-            justify-content: center; /* Center the window horizontally */
-            align-items: center; /* Center the window vertically */
-            min-height: 100vh; /* Ensure body fills the viewport height */
-            padding: 20px; /* Add padding around the window */
-            box-sizing: border-box;
-            overflow: auto; /* Allow body scroll if window is too large */
+            padding: 0;
         }
-
-        /* The "Window" Container */
-        .window-container {
-            width: 100%;
-            max-width: 800px; /* Max width for desktop */
-            height: 90vh; /* Max height of the window */
-            max-height: 900px;
-            background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
-            backdrop-filter: blur(20px); /* Glassmorphism blur effect */
-            -webkit-backdrop-filter: blur(20px); /* Safari support */
-            border-radius: 16px; /* Rounded corners */
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Prominent shadow */
-            border: 1px solid rgba(255, 255, 255, 0.18); /* Subtle border */
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Ensure internal content respects border-radius */
-            position: relative; /* Needed for absolute positioning inside */
+            overflow: hidden;
         }
-
-         /* Fallback for browsers that don't support backdrop-filter */
-         @supports not (backdrop-filter: blur(20px)) {
-             .window-container {
-                 background-color: rgba(255, 255, 255, 0.95); /* Less transparency if blur isn't supported */
-             }
-         }
-
-
-        /* Header (Title Bar) */
-        .window-header {
-            padding: 12px 20px;
-            background-color: rgba(255, 255, 255, 0.5); /* Slightly more opaque than main window */
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: 600; /* Semi-bold */
-            color: #2d2d2d; /* Darker text */
-            flex-shrink: 0; /* Prevent header from shrinking */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Settings Toggle Button */
-        .settings-toggle {
-            position: absolute; /* Position relative to window-container */
-            top: 10px;
-            right: 15px;
-            padding: 5px 10px;
-            background: none;
-            border: none;
-            color: #0078D7; /* Win11 accent blue */
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: color 0.2s ease, background-color 0.2s ease;
-            border-radius: 6px; /* Small roundness */
-            z-index: 10; /* Ensure it's above other content */
-        }
-        .settings-toggle:hover {
-            color: #0056b3;
-            background-color: rgba(0, 120, 215, 0.1); /* Subtle hover background */
-        }
-         .settings-toggle:focus {
-             outline: none;
-             box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.3); /* Focus ring */
-         }
-
-
-        /* Settings Panel */
-        .settings-panel {
-            padding: 15px 20px;
-            background-color: rgba(255, 255, 255, 0.8); /* Slightly more opaque */
-             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow below */
-            display: none; /* Initially hidden */
-            overflow-y: auto; /* Allow settings to scroll */
-            max-height: 40%; /* Limit height relative to window */
-            flex-shrink: 0;
-        }
-        .settings-panel h2 {
-            margin-top: 0;
-            font-size: 1.0rem;
-            color: #555;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        .settings-panel label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #555;
-        }
-        .settings-panel select,
-        .settings-panel input[type="number"],
-        .settings-panel .favorites-list {
-            width: calc(100% - 20px); /* Adjust for padding */
-            padding: 8px 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px; /* Rounded corners */
-            font-size: 0.9rem;
-            box-sizing: border-box;
-            background-color: #f9f9f9; /* Light background */
-        }
-         .settings-panel select {
-             /* Custom arrow might be needed for full Win11 look */
-         }
-         .settings-panel input[type="number"]:focus,
-         .settings-panel select:focus {
-             outline: none;
-             border-color: #0078D7;
-             box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.3);
-             background-color: #fff;
-         }
-
-        .favorites-list {
-            margin-top: 10px;
-            max-height: 120px; /* Limit height */
-            overflow-y: auto;
-            border: 1px solid #ddd; /* More subtle border */
-            padding: 8px;
-            border-radius: 6px;
-            background-color: #fff; /* White background for list */
-        }
-         .favorites-list div {
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            display: flex; /* Align checkbox and label */
-            align-items: center;
-         }
-         .favorites-list input[type="checkbox"] {
-             margin-right: 8px;
-             border-radius: 4px; /* Subtle rounded checkbox */
-             width: 16px; /* Standard size */
-             height: 16px;
-             flex-shrink: 0; /* Prevent shrinking */
-         }
-         .favorites-list label {
-              margin-bottom: 0;
-              font-weight: normal;
-              color: #333;
-              cursor: pointer; /* Indicate clickable */
-         }
-
-
-        .settings-panel .clear-buttons button {
-            margin-right: 10px;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 6px; /* Rounded buttons */
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.2s ease, opacity 0.2s ease;
-        }
-        .settings-panel .clear-buttons .clear-history { background-color: #ff9800; color: white; }
-        .settings-panel .clear-buttons .clear-favorites { background-color: #f44336; color: white; }
-        .settings-panel .clear-buttons button:hover { opacity: 0.9; }
-         .settings-panel .clear-buttons button:active { opacity: 0.7; } /* Press effect */
-
-
-        /* Chat Container */
-        .chat-container {
-            flex-grow: 1; /* Takes up available space */
-            overflow-y: auto; /* Enable scrolling */
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background-color: rgba(240, 240, 240, 0.6); /* Lighter background for chat area */
-             /* Custom Scrollbar (Optional - Webkit browsers) */
-            scrollbar-width: thin; /* Firefox */
-            scrollbar-color: #ccc transparent; /* Firefox */
-        }
-         .chat-container::-webkit-scrollbar {
-             width: 8px;
-         }
-         .chat-container::-webkit-scrollbar-track {
-             background: transparent; /* Make track transparent */
-         }
-         .chat-container::-webkit-scrollbar-thumb {
-             background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent thumb */
-             border-radius: 4px;
-             border: 2px solid transparent; /* Space around thumb */
-             background-clip: content-box; /* Include padding in background */
-         }
-          .chat-container::-webkit-scrollbar-thumb:hover {
-              background-color: rgba(0, 0, 0, 0.3);
-          }
-
-
-        /* Message Bubbles */
-        .message {
-            padding: 12px 15px;
-            border-radius: 12px; /* Slightly less rounded */
-            max-width: 85%;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            line-height: 1.5;
-            filter: drop-shadow(0 1px 0.5px rgba(0, 0, 0, 0.08)); /* Subtle shadow for bubbles */
-        }
-
-        .message.user {
-            background-color: #0078D7; /* Win11 accent blue */
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px; /* Small tail */
-        }
-
-        .message.assistant {
-            background-color: #ffffff;
-            color: #333;
-            align-self: flex-start;
-            border: 1px solid #eee; /* Lighter border */
-            border-bottom-left-radius: 4px; /* Small tail */
-             margin-right: 20px;
-        }
-         .message.error {
-             /* General error style */
-             filter: drop-shadow(0 1px 0.5px rgba(255, 0, 0, 0.2));
-         }
-         .message.user.error {
-             background-color: #d32f2f; /* Darker red for user errors */
-         }
-         .message.assistant.error {
-             background-color: #ffcdd2; /* Lighter red for assistant errors */
-             color: #c62828;
-             border-color: #ef9a9a;
-         }
-
-
-        /* Input Area */
-        .input-area {
+            padding: 1rem 1.5rem;
             display: flex;
-            padding: 15px 20px;
-            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent */
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            gap: 10px;
-            align-items: flex-end;
+            align-items: center;
+            box-shadow: var(--shadow);
+            z-index: 100;
             flex-shrink: 0;
         }
-
-        #message-input {
-            flex-grow: 1;
-            padding: 10px 15px; /* Adjust padding */
-            border: 1px solid #ccc;
-            border-radius: 24px; /* More rounded (pill-like) */
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-right: auto;
+        }
+        
+        .logo-icon {
+            margin-right: 0.8rem;
+            display: flex;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 0.8rem;
+            font-size: 1.1rem;
+        }
+        
+        .user-name {
+            margin-right: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+        
+        .logout-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-section {
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .section-header {
+            padding: 1rem 1.5rem;
+            background: var(--light-gray);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .section-header:hover {
+            background: #e9ecef;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-toggle {
+            color: var(--text-light);
+            transition: transform 0.2s ease;
+        }
+        
+        .section-toggle.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .section-content.expanded {
+            max-height: 300px;
+        }
+        
+        .online-count {
+            background: var(--secondary);
+            color: white;
+            border-radius: 1rem;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .room-count {
+            background: var(--primary);
+            color: white;
+            border-radius: 1rem;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .user-list, .room-list {
+            padding: 0.5rem;
+            overflow-y: auto;
+        }
+        
+        .user-item, .room-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .user-item:hover, .room-item:hover {
+            background: rgba(52, 152, 219, 0.08);
+            border-color: rgba(52, 152, 219, 0.2);
+        }
+        
+        .user-item.current-user {
+            background: rgba(46, 204, 113, 0.1);
+            border-color: rgba(46, 204, 113, 0.3);
+            cursor: default;
+        }
+        
+        .room-item.active {
+            background: rgba(52, 152, 219, 0.15);
+            border-color: var(--primary);
+        }
+        
+        .user-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.8rem;
+            flex-shrink: 0;
+        }
+        
+        .user-status.online {
+            background: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.3);
+        }
+        
+        .user-status.current {
+            background: var(--warning);
+            box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.3);
+        }
+        
+        .user-name, .room-name {
+            font-weight: 500;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .room-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .room-name {
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .room-last-message {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .room-time {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-left: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+        
+        .chat-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .chat-info {
+            margin-left: auto;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chat-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .chat-status.public {
+            background: var(--secondary);
+        }
+        
+        .chat-status.private {
+            background: var(--primary);
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f1f3f4;
+            scroll-behavior: smooth;
+        }
+        
+        .message-date {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .message-date::before,
+        .message-date::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: calc(50% - 60px);
+            height: 1px;
+            background: var(--border);
+        }
+        
+        .message-date::before {
+            left: 0;
+        }
+        
+        .message-date::after {
+            right: 0;
+        }
+        
+        .message-item {
+            max-width: 75%;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message-item.self {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+        
+        .message-item.other {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+        
+        .message-item.new-message {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .message-time {
+            color: var(--text-muted);
+            margin-left: 0.6rem;
+        }
+        
+        .message-private {
+            background: var(--secondary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.25rem;
+            margin-left: 0.5rem;
+        }
+        
+        .message-content {
+            background: white;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            word-break: break-word;
+            line-height: 1.4;
+            border: 1px solid var(--border-light);
+        }
+        
+        .message-item.self .message-content {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 0.3rem;
+        }
+        
+        .message-item.other .message-content {
+            border-bottom-left-radius: 0.3rem;
+        }
+        
+        .input-area {
+            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: flex-end;
+            gap: 0.8rem;
+            flex-shrink: 0;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
             font-size: 1rem;
             resize: none;
-            min-height: 40px; /* Explicit min-height */
-            max-height: 120px; /* Limit height */
-            overflow-y: auto;
-            box-sizing: border-box;
-            background-color: #fff; /* White background */
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            min-height: 40px;
+            max-height: 120px;
+            font-family: inherit;
+            transition: border-color 0.2s ease;
         }
-        #message-input:focus {
-             outline: none;
-             border-color: #0078D7;
-             box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.3);
+        
+        .message-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
-
-        #send-button {
-            padding: 10px 20px;
-            background-color: #0078D7; /* Win11 accent blue */
+        
+        .message-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .send-button {
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 24px; /* More rounded (pill-like) */
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: background-color 0.2s ease, opacity 0.2s ease;
-            min-width: 80px; /* Prevent button from shrinking too much */
-        }
-        #send-button:hover {
-            background-color: #0056b3;
-        }
-         #send-button:active {
-             background-color: #004494; /* Darker on press */
-         }
-        #send-button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        /* Status Area */
-        #status-area {
-            padding: 10px 20px;
-            background-color: #fff3e0;
-            color: #c67b00; /* Darker orange */
-            font-size: 0.9rem;
-            text-align: center;
-             border-top: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
             flex-shrink: 0;
-             display: none; /* Initially hidden */
         }
-         #status-area.error {
-            background-color: #ffebee;
-            color: #c62828;
-             border-top: 1px solid rgba(255, 255, 255, 0.3);
-         }
-
-
-        /* Markdown Styling (for assistant messages) */
-        .message.assistant pre {
-            background-color: #eef2f6; /* Light blue-ish code background */
-            padding: 10px;
-            border-radius: 6px;
-            overflow-x: auto;
-            margin-top: 10px;
-            margin-bottom: 10px;
-             line-height: 1.4;
-             font-size: 0.9em;
-             font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        
+        .send-button:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: scale(1.05);
         }
-         .message.assistant code {
-             font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-             background-color: #e0e0e0;
-             padding: 2px 4px;
-             border-radius: 4px;
-             font-size: 0.9em;
-         }
-         .message.assistant pre code { /* Reset inline code style within pre */
-             background-color: transparent;
-             padding: 0;
-             border-radius: 0;
-             font-size: inherit;
-         }
-
-        .message.assistant p {
-             margin-top: 0;
-             margin-bottom: 10px;
-             /* Override potential default margins from markdown lib */
-             padding-top: 0;
-             padding-bottom: 0;
+        
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
-         .message.assistant p:last-child {
-             margin-bottom: 0;
-         }
-
-        .message.assistant ul,
-        .message.assistant ol {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            padding-left: 25px; /* Slightly more indent */
+        
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-hover);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--secondary);
+            max-width: 300px;
         }
-         .message.assistant li {
-             margin-bottom: 5px;
-         }
-
-        .message.assistant blockquote {
-            border-left: 4px solid #0078D7; /* Accent color for blockquotes */
-            padding-left: 15px;
-            color: #555; /* Darker gray */
-            margin: 10px 0;
+        
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .notification-icon {
+            margin-right: 0.8rem;
+            color: var(--secondary);
+            flex-shrink: 0;
+        }
+        
+        .notification-text {
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        
+        .empty-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+        
+        .empty-description {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .mobile-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin-right: 1rem;
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
             font-style: italic;
         }
-
-         .message.assistant table {
-             border-collapse: collapse;
-             margin: 10px 0;
-             width: auto; /* Prevent table from forcing full width */
-             max-width: 100%; /* Ensure it doesn't exceed bubble width */
-         }
-         .message.assistant th,
-         .message.assistant td {
-             border: 1px solid #ddd;
-             padding: 8px;
-             text-align: left;
-             word-break: break-word; /* Break long text in cells */
-         }
-         .message.assistant th {
-             background-color: #f0f0f0;
-             font-weight: 600;
-         }
-
-
-         /* Responsive Adjustments */
-         @media (max-width: 820px) {
-             .window-container {
-                 width: 95%;
-                 height: 95vh;
-             }
-         }
-
-         @media (max-width: 600px) {
-             body { padding: 10px; } /* Reduce body padding */
-             .window-container {
-                 border-radius: 8px; /* Less rounded corners on small screens */
-                 height: 100vh; /* Full height on small screens */
-                  max-height: none;
-             }
-             .window-header {
-                 font-size: 1rem;
-                 padding: 10px 15px;
-             }
-             .settings-toggle {
-                 top: 8px;
-                 right: 10px;
-                 padding: 3px 8px;
-                 font-size: 0.8rem;
-             }
-             .settings-panel {
-                 padding: 10px 15px;
-             }
-             .settings-panel h2 {
-                  font-size: 1rem;
-                  padding-bottom: 5px;
-                  margin-bottom: 10px;
-             }
-             .settings-panel label,
-             .settings-panel select,
-             .settings-panel input[type="number"],
-              .settings-panel .favorites-list {
-                  font-size: 0.85rem;
-                  margin-bottom: 10px;
-             }
-             .settings-panel select,
-             .settings-panel input[type="number"],
-             .settings-panel .favorites-list {
-                  padding: 6px 8px;
-                  width: calc(100% - 16px);
-             }
-              .favorites-list {
-                  max-height: 80px;
-              }
-             .settings-panel .clear-buttons button {
-                 padding: 6px 10px;
-                 font-size: 0.85rem;
-                 margin-right: 5px;
-             }
-
-             .chat-container {
-                 padding: 15px;
-                 gap: 10px;
-             }
-             .message {
-                 padding: 10px 12px;
-                 border-radius: 10px;
-                 max-width: 98%; /* Allow messages to be wider */
-                  margin-right: 10px;
-             }
-             .message.assistant {
-                 margin-right: 10px; /* Reduce margin on small screens */
-             }
-             .input-area {
-                 padding: 10px 15px;
-                 gap: 8px;
-             }
-             #message-input {
-                 padding: 8px 12px;
-                 border-radius: 20px;
-                 min-height: 35px;
-             }
-             #send-button {
-                 padding: 8px 15px;
-                 border-radius: 20px;
-                 font-size: 0.9rem;
-                 min-width: 60px;
-             }
-             #status-area {
-                 padding: 8px 15px;
-                 font-size: 0.85rem;
-             }
-         }
-
+        
+        .typing-dots {
+            display: flex;
+            margin-left: 0.5rem;
+        }
+        
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            margin: 0 1px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { 
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 72px;
+                bottom: 0;
+                width: 85%;
+                max-width: 300px;
+                transition: left 0.3s ease;
+                z-index: 50;
+                box-shadow: var(--shadow-hover);
+            }
+            
+            .sidebar.active {
+                left: 0;
+            }
+            
+            .mobile-toggle {
+                display: flex;
+            }
+            
+            .user-name {
+                display: none;
+            }
+            
+            .section-content.expanded {
+                max-height: 200px;
+            }
+            
+            .message-item {
+                max-width: 90%;
+            }
+            
+            .input-area {
+                padding: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 0.8rem 1rem;
+            }
+            
+            .logo {
+                font-size: 1rem;
+            }
+            
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+            }
+            
+            .message-input {
+                font-size: 16px; /* 防止iOS缩放 */
+            }
+        }
+        
+        /* 滚动条样式 */
+        .messages-container::-webkit-scrollbar,
+        .user-list::-webkit-scrollbar,
+        .room-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .messages-container::-webkit-scrollbar-track,
+        .user-list::-webkit-scrollbar-track,
+        .room-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .messages-container::-webkit-scrollbar-thumb,
+        .user-list::-webkit-scrollbar-thumb,
+        .room-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        
+        .messages-container::-webkit-scrollbar-thumb:hover,
+        .user-list::-webkit-scrollbar-thumb:hover,
+        .room-list::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
     </style>
-    <!-- Include marked.js for Markdown rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-     <!-- Include DOMPurify for sanitizing Markdown output -->
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 </head>
 <body>
-
-    <div class="window-container">
-        <div class="window-header">LLM Chat</div>
-
-        <button class="settings-toggle" onclick="toggleSettings()" id="settings-toggle-button">设置选项 ▼</button>
-
-        <div class="settings-panel" id="settings-panel">
-            <h2>设置</h2>
-            <div>
-                <label for="model-select">选择模型:</label>
-                <select id="model-select">
-                    <!-- Options will be populated by JavaScript -->
-                </select>
+    <div class="header">
+        <button class="mobile-toggle" id="mobile-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        
+        <div class="logo">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
             </div>
-            <div>
-                <label>收藏模型:</label>
-                <div id="favorites-list" class="favorites-list">
-                    <!-- Favorites will be populated by JavaScript -->
-                </div>
-            </div>
-            <div>
-                <label for="temperature">温度 (Temperature):</label>
-                <input type="number" id="temperature" value="0.7" min="0" max="2" step="0.1" title="控制输出的随机性，值越高越随机，越低越确定。">
-            </div>
-             <div>
-                <label for="max-tokens">最大输出长度 (Max Tokens):</label>
-                <input type="number" id="max-tokens" value="500" min="1" title="模型生成的最大 token 数量。">
-            </div>
-            <div class="clear-buttons">
-                <button class="clear-history" onclick="clearChatHistory()">清除聊天记录 (保留3个月内)</button>
-                <button class="clear-favorites" onclick="clearFavorites()">清除收藏模型</button>
-            </div>
+            Cloudflare 聊天室
         </div>
-
-        <div id="chat-container" class="chat-container">
-            <!-- Chat messages will be added here -->
-        </div>
-
-        <div class="input-area">
-            <textarea id="message-input" placeholder="输入你的消息..." rows="1"></textarea>
-            <button id="send-button">发送</button>
-        </div>
-
-        <div id="status-area" class="status-area">
-            <!-- Status or error messages -->
+        
+        <div class="user-info">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div class="user-name" id="current-user">用户</div>
+            <button class="logout-btn" id="logout-button">
+                <svg class="logout-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                退出
+            </button>
         </div>
     </div>
-
+    
+    <div class="main-container">
+        <div class="sidebar" id="sidebar">
+            <!-- 房间列表 -->
+            <div class="sidebar-section">
+                <div class="section-header" id="rooms-header">
+                    <div class="section-title">
+                        私聊房间
+                        <span class="room-count" id="room-count">0</span>
+                    </div>
+                    <svg class="section-toggle" id="rooms-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="section-content" id="rooms-content">
+                    <div class="room-list" id="room-list">
+                        <!-- 房间列表由JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 在线用户 -->
+            <div class="sidebar-section">
+                <div class="section-header" id="users-header">
+                    <div class="section-title">
+                        在线用户
+                        <span class="online-count" id="online-count">0</span>
+                    </div>
+                    <svg class="section-toggle" id="users-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="section-content" id="users-content">
+                    <div class="user-list" id="user-list">
+                        <!-- 用户列表由JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-title" id="chat-title">大厅聊天</div>
+                <div class="chat-info" id="chat-info">
+                    <div class="chat-status public" id="chat-status"></div>
+                    <span id="chat-info-text">所有用户可见</span>
+                </div>
+            </div>
+            
+            <div class="messages-container" id="messages-container">
+                <div class="empty-state" id="empty-state">
+                    <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        <path d="M13 8l-3 3 3 3"></path>
+                    </svg>
+                    <div class="empty-title">开始聊天吧！</div>
+                    <div class="empty-description">在下方输入消息，或点击左侧用户开始私聊</div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <textarea class="message-input" id="message-input" placeholder="输入消息... (Shift+Enter换行)" rows="1"></textarea>
+                <button class="send-button" id="send-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <svg class="notification-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="notification-text" id="notification-text">新消息</span>
+    </div>
 
     <script>
-        const CHAT_STORAGE_KEY = 'llm_chat_history';
-        const FAVORITES_STORAGE_KEY = 'llm_favorite_models';
-        const WORKER_API_BASE = '/api'; // Cloudflare Worker route base
-        const THREE_MONTHS_MS = 3 * 30 * 24 * 60 * 60 * 1000; // Rough estimate for 3 months
-
-        let chatHistory = [];
-        let favoriteModels = [];
-        let availableModels = []; // Store fetched models
-
-        // Configure marked.js (optional, defaults are usually fine)
-        // marked.setOptions({
-        //     gfm: true, // Use GitHub flavored markdown
-        //     breaks: true, // Add <br> on a single newline
-        //     // highlight: function(code, lang) { /* Add syntax highlighting library here if needed */ return code; },
-        // });
-
-
-        // --- Local Storage Management ---
-
-        function loadChatHistory() {
-            const historyJson = localStorage.getItem(CHAT_STORAGE_KEY);
-            if (historyJson) {
-                try {
-                    chatHistory = JSON.parse(historyJson);
-                     // Ensure timestamps exist and are numbers for filtering
-                    chatHistory.forEach(msg => {
-                        if (!msg.timestamp || typeof msg.timestamp !== 'number') {
-                             // Attempt to parse if it's a string date, otherwise set to now
-                            try {
-                                const date = new Date(msg.timestamp);
-                                msg.timestamp = isNaN(date.getTime()) ? Date.now() : date.getTime();
-                            } catch (e) {
-                                msg.timestamp = Date.now(); // Fallback
-                            }
-                        }
-                         // Add role if missing (for very old formats)
-                         if (!msg.role) msg.role = 'assistant'; // Guessing default role if missing
-                    });
-                    clearOldMessages(); // Clear old messages on load
-                } catch (e) {
-                    console.error("Failed to parse chat history from localStorage", e);
-                    chatHistory = []; // Start fresh if corrupted
+        // 全局变量
+        const API_BASE = window.location.origin;
+        const currentUser = localStorage.getItem('currentUser');
+        
+        // DOM元素
+        const sidebar = document.getElementById('sidebar');
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const messagesContainer = document.getElementById('messages-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const userList = document.getElementById('user-list');
+        const roomList = document.getElementById('room-list');
+        const onlineCount = document.getElementById('online-count');
+        const roomCount = document.getElementById('room-count');
+        const currentUserElement = document.getElementById('current-user');
+        const userAvatar = document.getElementById('user-avatar');
+        const chatTitle = document.getElementById('chat-title');
+        const chatInfoText = document.getElementById('chat-info-text');
+        const chatStatus = document.getElementById('chat-status');
+        const logoutButton = document.getElementById('logout-button');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
+        const emptyState = document.getElementById('empty-state');
+        
+        // 状态变量
+        let currentRoom = 'public';
+        let currentRoomType = 'public'; // 'public' 或 'private'
+        let currentChatTarget = '';
+        let pollInterval = null;
+        let lastActiveCheck = 0;
+        let isWindowFocused = true;
+        let lastMessageCount = 0;
+        let animatedMessages = new Set();
+        let firstLoad = true;
+        let isTyping = false;
+        let typingTimeout = null;
+        
+        // 初始化应用
+        function init() {
+            if (!currentUser) {
+                window.location.href = 'auth.html';
+                return;
+            }
+            
+            setupUI();
+            setupEventListeners();
+            startPolling();
+            fetchData();
+        }
+        
+        // 设置UI
+        function setupUI() {
+            currentUserElement.textContent = currentUser;
+            userAvatar.textContent = currentUser.charAt(0).toUpperCase();
+            updateChatHeader();
+            
+            // 默认展开房间列表
+            toggleSection('rooms', true);
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 发送消息
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keydown', handleKeydown);
+            messageInput.addEventListener('input', handleInputChange);
+            
+            // 登出
+            logoutButton.addEventListener('click', logout);
+            
+            // 移动端侧边栏
+            mobileToggle.addEventListener('click', toggleSidebar);
+            
+            // 侧边栏折叠
+            document.getElementById('rooms-header').addEventListener('click', () => toggleSection('rooms'));
+            document.getElementById('users-header').addEventListener('click', () => toggleSection('users'));
+            
+            // 窗口焦点
+            window.addEventListener('focus', () => {
+                isWindowFocused = true;
+                hideNotification();
+            });
+            
+            window.addEventListener('blur', () => {
+                isWindowFocused = false;
+            });
+            
+            // 点击聊天区域关闭侧边栏(移动端)
+            messagesContainer.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
                 }
+            });
+        }
+        
+        // 切换侧边栏部分
+        function toggleSection(section, forceExpand = false) {
+            const content = document.getElementById(`${section}-content`);
+            const toggle = document.getElementById(`${section}-toggle`);
+            const isExpanded = content.classList.contains('expanded');
+            
+            if (forceExpand || !isExpanded) {
+                content.classList.add('expanded');
+                toggle.classList.add('expanded');
             } else {
-                chatHistory = [];
+                content.classList.remove('expanded');
+                toggle.classList.remove('expanded');
             }
         }
-
-        function saveChatHistory() {
-            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatHistory));
+        
+        // 切换移动端侧边栏
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
         }
-
-        function clearOldMessages() {
+        
+        // 启动轮询
+        function startPolling() {
+            fetchData();
+            pollInterval = setInterval(fetchData, 5000);
+        }
+        
+        // 获取数据
+        async function fetchData() {
+            try {
+                await Promise.all([
+                    loadMessages(),
+                    loadUsers(),
+                    loadRooms(),
+                    updateActiveStatus()
+                ]);
+            } catch (error) {
+                console.error("数据获取失败:", error);
+                showNotification("连接失败，请检查网络");
+            }
+        }
+        
+        // 更新活跃状态
+        async function updateActiveStatus() {
             const now = Date.now();
-            // Filter out messages older than 3 months
-            const threeMonthsAgo = now - THREE_MONTHS_MS;
-            const newHistory = chatHistory.filter(msg => {
-                 // Handle potential invalid timestamps gracefully
-                 const msgTimestamp = msg.timestamp || now; // Use 'now' if timestamp is missing/invalid
-                 return (now - msgTimestamp) < THREE_MONTHS_MS;
-            });
-
-
-            if (newHistory.length < chatHistory.length) {
-                console.log(`Cleared ${chatHistory.length - newHistory.length} old messages.`);
-                chatHistory = newHistory;
-                saveChatHistory(); // Save after clearing
-                // Optionally re-display after clearing old messages
-                // displayChatHistory();
-            }
-        }
-
-        function loadFavorites() {
-            const favoritesJson = localStorage.getItem(FAVORITES_STORAGE_KEY);
-            if (favoritesJson) {
-                try {
-                    favoriteModels = JSON.parse(favoritesJson);
-                    // Ensure favoriteModels is an array of strings
-                    if (!Array.isArray(favoriteModels)) favoriteModels = [];
-                    else favoriteModels = favoriteModels.filter(fav => typeof fav === 'string');
-
-                } catch (e) {
-                    console.error("Failed to parse favorites from localStorage", e);
-                    favoriteModels = []; // Start fresh
-                }
-            } else {
-                favoriteModels = [];
-            }
-        }
-
-        function saveFavorites() {
-            localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteModels));
-        }
-
-        function clearChatHistory() {
-             if (confirm("确定要清除所有聊天记录吗？（3个月前的记录会自动清除，此操作会立即清除所有记录）")) {
-                chatHistory = [];
-                saveChatHistory();
-                displayChatHistory();
-                alert("聊天记录已清除。");
-             }
-        }
-
-        function clearFavorites() {
-             if (confirm("确定要清除收藏模型列表吗？")) {
-                favoriteModels = [];
-                saveFavorites();
-                renderFavoritesList(); // Re-render the favorites list UI
-                populateModelSelect(); // Update dropdown as well
-                alert("收藏模型列表已清除。");
-             }
-        }
-
-        // --- UI Rendering ---
-
-        function displayMessage(message) {
-            const chatContainer = document.getElementById('chat-container');
-            const msgElement = document.createElement('div');
-            msgElement.classList.add('message', message.role); // 'user' or 'assistant'
-
-            if (message.role === 'assistant') {
-                 // Render assistant messages as Markdown
-                 try {
-                     // Sanitize potential HTML before rendering Markdown using DOMPurify
-                     const cleanContent = DOMPurify.sanitize(message.content);
-                     msgElement.innerHTML = marked.parse(cleanContent);
-                 } catch (e) {
-                     console.error("Markdown rendering failed:", e);
-                     msgElement.textContent = message.content; // Fallback to plain text
-                 }
-                 if (message.content.startsWith('[错误]')) {
-                      msgElement.classList.add('error'); // Add error class for styling
-                 }
-            } else {
-                // Render user messages as plain text (safer)
-                msgElement.textContent = message.content;
-                 if (message.content.startsWith('[错误]')) {
-                      msgElement.classList.add('error'); // Add error class for styling
-                 }
-            }
-
-            chatContainer.appendChild(msgElement);
-            // Auto-scroll to the latest message smoothly
-            chatContainer.scrollTo({
-                top: chatContainer.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-
-        function displayChatHistory() {
-            const chatContainer = document.getElementById('chat-container');
-            chatContainer.innerHTML = ''; // Clear current display
-            chatHistory.forEach(msg => displayMessage(msg));
-             // Ensure scroll to bottom after loading history
-             chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function toggleSettings() {
-            const settingsPanel = document.getElementById('settings-panel');
-            const toggleButton = document.getElementById('settings-toggle-button');
-            const isHidden = settingsPanel.style.display === 'none' || settingsPanel.style.display === '';
-            settingsPanel.style.display = isHidden ? 'block' : 'none';
-            toggleButton.textContent = isHidden ? '设置选项 ▼' : '设置选项 ▲';
-             // Scroll chat to bottom if settings panel is hidden, just in case
-             if (!isHidden) {
-                 const chatContainer = document.getElementById('chat-container');
-                 chatContainer.scrollTop = chatContainer.scrollHeight;
-             }
-        }
-
-        function populateModelSelect() {
-            const modelSelect = document.getElementById('model-select');
-            const currentValue = modelSelect.value; // Keep current selection if possible
-            modelSelect.innerHTML = ''; // Clear existing options
-
-            // Ensure availableModels and favoriteModels are ready
-            if (!availableModels || availableModels.length === 0) {
-                 const option = document.createElement('option');
-                 option.value = '';
-                 option.textContent = '加载模型失败或无可用模型';
-                 option.disabled = true;
-                 modelSelect.appendChild(option);
-                 return;
-            }
-
-            // Separate favorites and others
-            const favoriteModelsData = availableModels.filter(model => favoriteModels.includes(model.id));
-            const otherModelsData = availableModels.filter(model => !favoriteModels.includes(model.id));
-
-            // Sort models alphabetically by ID
-            favoriteModelsData.sort((a, b) => a.id.localeCompare(b.id));
-            otherModelsData.sort((a, b) => a.id.localeCompare(b.id));
-
-            if (favoriteModelsData.length > 0) {
-                const optgroup = document.createElement('optgroup');
-                optgroup.label = '收藏模型';
-                 favoriteModelsData.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.id;
-                    // Use model.name if available, otherwise model.id
-                    option.textContent = model.name ? `${model.name} (${model.id})` : model.id;
-                    optgroup.appendChild(option);
-                });
-                modelSelect.appendChild(optgroup);
-            }
-
-             if (otherModelsData.length > 0) {
-                 const optgroup = document.createElement('optgroup');
-                 optgroup.label = '其他模型';
-                 otherModelsData.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.id;
-                     option.textContent = model.name ? `${model.name} (${model.id})` : model.id;
-                    optgroup.appendChild(option);
-                });
-                modelSelect.appendChild(optgroup);
-            }
-
-
-            // Restore previous selection or select a default
-            if (currentValue && availableModels.some(model => model.id === currentValue)) {
-                 modelSelect.value = currentValue;
-            } else if (favoriteModelsData.length > 0) {
-                modelSelect.value = favoriteModelsData[0].id;
-            } else if (otherModelsData.length > 0) {
-                 modelSelect.value = otherModelsData[0].id;
-            } else {
-                 modelSelect.value = ''; // No models available
-            }
-        }
-
-        function renderFavoritesList() {
-            const favoritesListDiv = document.getElementById('favorites-list');
-            favoritesListDiv.innerHTML = ''; // Clear existing list
-
-             if (!availableModels || availableModels.length === 0) {
-                 favoritesListDiv.textContent = '无可用模型';
-                 return;
-             }
-
-             // Sort available models by ID for consistent display
-             const sortedAvailableModels = [...availableModels].sort((a, b) => a.id.localeCompare(b.id));
-
-            sortedAvailableModels.forEach(model => {
-                const modelDiv = document.createElement('div');
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                // Sanitize ID for element ID, replace non-alphanumeric except hyphen/underscore
-                checkbox.id = `fav-${model.id.replace(/[^a-zA-Z0-9_-]/g, '')}`;
-                checkbox.value = model.id;
-                checkbox.checked = favoriteModels.includes(model.id);
-                checkbox.addEventListener('change', handleFavoriteChange);
-
-                const label = document.createElement('label');
-                label.htmlFor = checkbox.id;
-                label.textContent = model.name ? `${model.name} (${model.id})` : model.id;
-
-                modelDiv.appendChild(checkbox);
-                modelDiv.appendChild(label);
-                favoritesListDiv.appendChild(modelDiv);
-            });
-
-             // Update model selection dropdown after rendering favorites
-            populateModelSelect();
-        }
-
-        function handleFavoriteChange(event) {
-            const modelId = event.target.value;
-            if (event.target.checked) {
-                if (!favoriteModels.includes(modelId)) {
-                    favoriteModels.push(modelId);
-                }
-            } else {
-                favoriteModels = favoriteModels.filter(id => id !== modelId);
-            }
-            saveFavorites();
-             // Update model selection dropdown after changing favorites
-            populateModelSelect();
-        }
-
-        function showStatus(message, isError = false) {
-            const statusArea = document.getElementById('status-area');
-            statusArea.textContent = message;
-            statusArea.className = 'status-area'; // Reset classes
-            if (isError) {
-                statusArea.classList.add('error');
-            }
-            statusArea.style.display = 'block';
-             // Don't auto-hide errors
-             if (!isError) {
-                  // Auto-hide success/loading status after a few seconds
-                 setTimeout(hideStatus, 3000); // Hide after 3 seconds
-             }
-        }
-
-         function hideStatus() {
-             document.getElementById('status-area').style.display = 'none';
-         }
-
-
-        // --- API Interaction ---
-
-        async function fetchModels() {
-            showStatus("正在获取可用模型列表...");
+            if (now - lastActiveCheck < 30000) return;
+            
+            lastActiveCheck = now;
+            
             try {
-                const response = await fetch(`${WORKER_API_BASE}/models`);
-
-                 if (!response.ok) {
-                     // Try to parse JSON error even on non-200 status
-                      const errorBody = await response.json().catch(() => null);
-                      let errorMessage = `HTTP 错误: 状态码 ${response.status}.`;
-                      if (response.status === 403) {
-                          errorMessage = "获取模型列表失败: 后端拒绝了请求，请检查 worker 的 ALLOWED_ORIGIN 配置。";
-                      } else if (errorBody && errorBody.error && errorBody.error.message) {
-                           errorMessage = `获取模型列表失败: ${errorBody.error.message}`;
-                      } else if (errorBody && errorBody.message) {
-                           errorMessage = `获取模型列表失败: ${errorBody.message}`;
-                      } else {
-                            errorMessage += ` 响应: ${await response.text().catch(() => '无法读取响应')}`;
-                      }
-                    throw new Error(errorMessage);
-                }
-
-                const data = await response.json();
-                // Assuming the worker returns an array of model objects { id: string, name?: string }
-                availableModels = data;
-                console.log("Available models:", availableModels);
-
-                if (availableModels.length === 0) {
-                    showStatus("未获取到可用模型列表，请检查后端配置和API密钥。", true);
-                     return;
-                }
-
-                hideStatus(); // Hide status if successful
-
-                // Populate UI elements
-                renderFavoritesList(); // Renders checkboxes and updates dropdown
-                // populateModelSelect() is called inside renderFavoritesList
-
-            } catch (error) {
-                console.error("Failed to fetch models:", error);
-                showStatus(`获取模型列表失败: ${error.message}.`, true);
-                availableModels = []; // Clear models if fetching fails
-                populateModelSelect(); // Clear options in dropdown
-                renderFavoritesList(); // Clear favorites list UI
-            }
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('message-input');
-            const sendButton = document.getElementById('send-button');
-            const messageText = input.value.trim();
-
-            if (!messageText) return;
-
-            // Get selected model and parameters
-            const modelSelect = document.getElementById('model-select');
-            const selectedModel = modelSelect.value;
-             if (!selectedModel || !availableModels.some(model => model.id === selectedModel)) {
-                 showStatus("请先选择一个有效的模型。", true);
-                 return;
-             }
-
-            const temperature = parseFloat(document.getElementById('temperature').value);
-            const maxTokens = parseInt(document.getElementById('max-tokens').value, 10);
-
-            // Add user message to history and display
-            const userMessage = { role: 'user', content: messageText, timestamp: Date.now() };
-            chatHistory.push(userMessage);
-            displayMessage(userMessage);
-            saveChatHistory();
-
-            // Clear input, reset textarea height, and disable button
-            input.value = '';
-            autoResizeTextarea(); // Reset height after clearing
-            sendButton.disabled = true;
-            showStatus(`使用 ${selectedModel} 模型思考中...`);
-
-            try {
-                // Prepare message history for the API call
-                // Use a common pattern: system message (optional), then alternating user/assistant messages.
-                // The last few messages are most relevant for context.
-                // We'll send the last N messages, making sure it starts with a user message if possible.
-                const HISTORY_LIMIT = 20; // Send last 20 messages, adjust as needed
-                // Filter out error messages from history sent to API
-                const filteredHistory = chatHistory.filter(msg => !msg.content.startsWith('[错误]'));
-                let messagesToSend = filteredHistory.slice(-HISTORY_LIMIT);
-
-                 // Optional: Add a system message if needed by the API or your workflow
-                 // messagesToSend.unshift({ role: 'system', content: 'You are a helpful assistant.' });
-
-
-                const response = await fetch(`${WORKER_API_BASE}/chat`, {
+                await fetch(`${API_BASE}/api/active`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Origin': window.location.origin // Explicitly send origin
-                    },
-                    body: JSON.stringify({
-                        model: selectedModel,
-                        messages: messagesToSend,
-                        temperature: temperature,
-                        max_tokens: maxTokens,
-                        // Add other parameters if needed/supported by the worker/API
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser })
                 });
-
-                 if (!response.ok) {
-                     const errorBody = await response.json().catch(() => null); // Try to parse JSON error body
-                     let errorMessage = `模型请求失败: 状态码 ${response.status}.`;
-
-                     if (response.status === 401 || response.status === 403) {
-                         errorMessage = "API 密钥无效、权限不足或后端拒绝了请求（请检查 worker 的 ALLOWED_ORIGIN）。";
-                     } else if (response.status === 429) {
-                         errorMessage = "模型额度可能已用尽或请求频率过高。请稍后再试或检查您的账户。";
-                     } else if (errorBody && errorBody.error && errorBody.error.message) {
-                         errorMessage = `模型请求失败: ${errorBody.error.message}`;
-                     } else if (errorBody && errorBody.message) { // For Gemini direct errors etc.
-                          errorMessage = `模型请求失败: ${errorBody.message}`;
-                     } else {
-                           errorMessage += ` 响应: ${await response.text().catch(() => '无法读取响应')}`;
-                     }
-
-                    throw new Error(errorMessage);
-                }
-
-                const data = await response.json();
-                console.log("API response:", data);
-
-                // Assuming the worker returns data in a format similar to OpenAI chat completions
-                // e.g., { choices: [{ message: { role: 'assistant', content: '...' } }] }
-                // Or potentially Gemini direct format: { candidates: [{ content: { parts: [{ text: '...' }] } }] }
-                const assistantMessageContent = data.choices?.[0]?.message?.content || data?.candidates?.[0]?.content?.parts?.[0]?.text || "获取回复失败。模型返回了未知格式的响应。";
-
-                const assistantMessage = { role: 'assistant', content: assistantMessageContent, timestamp: Date.now() };
-                chatHistory.push(assistantMessage);
-                displayMessage(assistantMessage);
-                saveChatHistory();
-                hideStatus(); // Hide status on success
-
             } catch (error) {
-                console.error("Error sending message:", error);
-                // Display error message in the chat
-                 const errorMessage = { role: 'assistant', content: `[错误] ${error.message}`, timestamp: Date.now() };
-                 displayMessage(errorMessage); // Display the error message bubble
-                 chatHistory.push(errorMessage); // Add error message to history
-                 saveChatHistory();
-                 showStatus(`发送消息失败: ${error.message}`, true); // Also show in status area
-
-            } finally {
-                // Re-enable input and button
-                sendButton.disabled = false;
-                 // Keep error status visible, hide success status after a delay (handled in showStatus)
+                console.error("活跃状态更新失败:", error);
             }
         }
-
-        // --- Textarea Auto-resize ---
-         function autoResizeTextarea() {
-            const input = document.getElementById('message-input');
-            input.style.height = 'auto'; // Reset height first to get accurate scrollHeight
-             const scrollHeight = input.scrollHeight;
-             // Ensure minHeight is respected (e.g., 40px from CSS, minus padding/border)
-             const minHeight = parseFloat(getComputedStyle(input).minHeight);
-             const padding = parseFloat(getComputedStyle(input).paddingTop) + parseFloat(getComputedStyle(input).paddingBottom);
-             const border = parseFloat(getComputedStyle(input).borderTopWidth) + parseFloat(getComputedStyle(input).borderBottomWidth);
-             const effectiveMinHeight = minHeight - padding - border;
-
-            input.style.height = Math.max(scrollHeight, effectiveMinHeight + padding + border) + 'px'; // Apply height, ensuring it's at least min height
-
-         }
-
-
-        // --- Initialization and Event Listeners ---
-
-        document.getElementById('send-button').addEventListener('click', sendMessage);
-        document.getElementById('message-input').addEventListener('input', autoResizeTextarea); // Auto-resize on input
-        document.getElementById('message-input').addEventListener('keypress', function(event) {
-            // Send message on Enter key (unless Shift is held for new line)
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault(); // Prevent default Enter behavior (new line)
+        
+        // 加载消息
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${API_BASE}/api/messages?user=${encodeURIComponent(currentUser)}&roomId=${currentRoom}`);
+                const messages = await response.json();
+                
+                if (!Array.isArray(messages)) {
+                    console.error("消息格式错误:", messages);
+                    return;
+                }
+                
+                // 检查新消息
+                if (messages.length > lastMessageCount && !isWindowFocused && !firstLoad) {
+                    const newCount = messages.length - lastMessageCount;
+                    showNotification(`您有 ${newCount} 条新消息`);
+                }
+                lastMessageCount = messages.length;
+                
+                // 显示/隐藏空状态
+                if (messages.length === 0) {
+                    emptyState.style.display = 'flex';
+                    return;
+                } else {
+                    emptyState.style.display = 'none';
+                }
+                
+                // 保存滚动位置
+                const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 50;
+                
+                // 渲染消息
+                renderMessages(messages);
+                
+                // 恢复滚动位置
+                if (isAtBottom || firstLoad) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+                
+                firstLoad = false;
+            } catch (error) {
+                console.error("消息加载失败:", error);
+            }
+        }
+        
+        // 渲染消息
+        function renderMessages(messages) {
+            const groupedMessages = groupMessagesByDate(messages);
+            let html = '';
+            
+            for (const [date, dailyMessages] of Object.entries(groupedMessages)) {
+                html += `<div class="message-date">${date}</div>`;
+                
+                dailyMessages.forEach(msg => {
+                    const isNew = !animatedMessages.has(msg.id || msg.time);
+                    if (isNew) {
+                        animatedMessages.add(msg.id || msg.time);
+                    }
+                    html += createMessageHTML(msg, isNew && !firstLoad);
+                });
+            }
+            
+            messagesContainer.innerHTML = html;
+        }
+        
+        // 按日期分组消息
+        function groupMessagesByDate(messages) {
+            const grouped = {};
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            
+            messages.forEach(msg => {
+                const date = new Date(msg.time);
+                const dateStr = date.toDateString();
+                
+                let displayDate;
+                if (dateStr === today) {
+                    displayDate = '今天';
+                } else if (dateStr === yesterday) {
+                    displayDate = '昨天';
+                } else {
+                    displayDate = date.toLocaleDateString('zh-CN', {
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+                
+                if (!grouped[displayDate]) {
+                    grouped[displayDate] = [];
+                }
+                grouped[displayDate].push(msg);
+            });
+            
+            return grouped;
+        }
+        
+        // 创建消息HTML
+        function createMessageHTML(msg, isNew = false) {
+            const messageTime = new Date(msg.time);
+            const formattedTime = messageTime.toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const isCurrentUser = msg.from === currentUser;
+            const isPrivate = !!msg.to;
+            const messageClass = isCurrentUser ? 'self' : 'other';
+            const newClass = isNew ? 'new-message' : '';
+            
+            return `
+                <div class="message-item ${messageClass} ${newClass}">
+                    <div class="message-header">
+                        <span class="message-sender">${escapeHTML(msg.from)}</span>
+                        <span class="message-time">${formattedTime}</span>
+                        ${isPrivate ? '<span class="message-private">私聊</span>' : ''}
+                    </div>
+                    <div class="message-content">${escapeHTML(msg.message)}</div>
+                </div>
+            `;
+        }
+        
+        // 加载用户列表
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/users`);
+                const users = await response.json();
+                
+                if (!Array.isArray(users)) return;
+                
+                // 排序：当前用户在前，其他用户按字母排序
+                const sortedUsers = users.sort((a, b) => {
+                    if (a === currentUser) return -1;
+                    if (b === currentUser) return 1;
+                    return a.localeCompare(b);
+                });
+                
+                userList.innerHTML = sortedUsers.map(user => {
+                    const isCurrentUserItem = user === currentUser;
+                    const statusClass = isCurrentUserItem ? 'current' : 'online';
+                    const itemClass = isCurrentUserItem ? 'current-user' : '';
+                    
+                    return `
+                        <div class="user-item ${itemClass}" data-username="${escapeHTML(user)}" ${!isCurrentUserItem ? 'onclick="startPrivateChat(this)"' : ''}>
+                            <div class="user-status ${statusClass}"></div>
+                            <div class="user-name">${escapeHTML(user)}${isCurrentUserItem ? ' (我)' : ''}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                onlineCount.textContent = users.length;
+                
+            } catch (error) {
+                console.error("用户列表加载失败:", error);
+            }
+        }
+        
+        // 加载房间列表
+        async function loadRooms() {
+            try {
+                const response = await fetch(`${API_BASE}/api/rooms?user=${encodeURIComponent(currentUser)}`);
+                const rooms = await response.json();
+                
+                if (!Array.isArray(rooms)) {
+                    roomList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">暂无私聊</div>';
+                    roomCount.textContent = '0';
+                    return;
+                }
+                
+                roomList.innerHTML = rooms.map(room => {
+                    const lastMsg = room.lastMessage;
+                    const timeStr = lastMsg ? formatTime(lastMsg.time) : '';
+                    const lastMsgPreview = lastMsg ? 
+                        (lastMsg.from === currentUser ? '我: ' : '') + lastMsg.content : 
+                        '暂无消息';
+                    
+                    const isActive = currentRoom === room.id;
+                    
+                    return `
+                        <div class="room-item ${isActive ? 'active' : ''}" data-room-id="${escapeHTML(room.id)}" data-room-name="${escapeHTML(room.displayName)}" onclick="switchToRoom(this)">
+                            <div class="user-status online"></div>
+                            <div class="room-info">
+                                <div class="room-name">${escapeHTML(room.displayName)}</div>
+                                <div class="room-last-message">${escapeHTML(lastMsgPreview)}</div>
+                            </div>
+                            <div class="room-time">${timeStr}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                roomCount.textContent = rooms.length;
+                
+            } catch (error) {
+                console.error("房间列表加载失败:", error);
+            }
+        }
+        
+        // 发送消息
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // 禁用发送按钮
+            sendButton.disabled = true;
+            
+            try {
+                const payload = {
+                    from: currentUser,
+                    message: message,
+                    roomId: currentRoom
+                };
+                
+                // 如果是私聊，添加接收者
+                if (currentRoomType === 'private') {
+                    payload.to = currentChatTarget;
+                }
+                
+                const response = await fetch(`${API_BASE}/api/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                    
+                    // 立即刷新消息
+                    setTimeout(loadMessages, 100);
+                } else {
+                    const result = await response.json();
+                    showNotification(result.error || "消息发送失败");
+                }
+                
+            } catch (error) {
+                console.error("发送消息失败:", error);
+                showNotification("网络错误，消息发送失败");
+            } finally {
+                sendButton.disabled = false;
+            }
+        }
+        
+        // 处理键盘事件
+        function handleKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 sendMessage();
             }
+        }
+        
+        // 处理输入变化
+        function handleInputChange() {
+            // 自动调整高度
+            messageInput.style.height = 'auto';
+            const scrollHeight = messageInput.scrollHeight;
+            messageInput.style.height = Math.min(scrollHeight, 120) + 'px';
+            
+            // 简单的打字指示器逻辑
+            if (!isTyping && messageInput.value.length > 0) {
+                isTyping = true;
+            }
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+            }, 1000);
+        }
+        
+        // 开始私聊
+        function startPrivateChat(userElement) {
+            const username = userElement.dataset.username;
+            if (username === currentUser) return;
+            
+            const roomId = getRoomId(currentUser, username);
+            switchToPrivateRoom(roomId, username);
+            
+            // 移动端关闭侧边栏
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('active');
+            }
+        }
+        
+        // 切换到房间
+        function switchToRoom(roomElement) {
+            const roomId = roomElement.dataset.roomId;
+            const roomName = roomElement.dataset.roomName;
+            
+            switchToPrivateRoom(roomId, roomName);
+            
+            // 移动端关闭侧边栏
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('active');
+            }
+        }
+        
+        // 切换到私聊房间
+        function switchToPrivateRoom(roomId, targetUser) {
+            currentRoom = roomId;
+            currentRoomType = 'private';
+            currentChatTarget = targetUser;
+            
+            updateChatHeader();
+            updateRoomActiveState();
+            loadMessages();
+            messageInput.focus();
+        }
+        
+        // 切换到大厅
+        function switchToPublic() {
+            currentRoom = 'public';
+            currentRoomType = 'public';
+            currentChatTarget = '';
+            
+            updateChatHeader();
+            updateRoomActiveState();
+            loadMessages();
+        }
+        
+        // 更新聊天头部
+        function updateChatHeader() {
+            if (currentRoomType === 'private') {
+                chatTitle.textContent = `与 ${currentChatTarget} 私聊`;
+                chatInfoText.textContent = '仅双方可见';
+                chatStatus.className = 'chat-status private';
+            } else {
+                chatTitle.textContent = '大厅聊天';
+                chatInfoText.textContent = '所有用户可见';
+                chatStatus.className = 'chat-status public';
+            }
+        }
+        
+        // 更新房间激活状态
+        function updateRoomActiveState() {
+            document.querySelectorAll('.room-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.roomId === currentRoom) {
+                    item.classList.add('active');
+                }
+            });
+        }
+        
+        // 生成房间ID
+        function getRoomId(user1, user2) {
+            return [user1, user2].sort().join('_');
+        }
+        
+        // 显示通知
+        function showNotification(text) {
+            notificationText.textContent = text;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                hideNotification();
+            }, 4000);
+        }
+        
+        // 隐藏通知
+        function hideNotification() {
+            notification.classList.remove('show');
+        }
+        
+        // 格式化时间
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            } else if (diffDays === 1) {
+                return '昨天';
+            } else if (diffDays < 7) {
+                return `${diffDays}天前`;
+            } else {
+                return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+            }
+        }
+        
+        // HTML转义
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('currentUser');
+                if (pollInterval) {
+                    clearInterval(pollInterval);
+                }
+                window.location.href = 'auth.html';
+            }
+        }
+        
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', () => {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
         });
-
-        // Initial load
-        window.addEventListener('load', () => {
-            loadChatHistory();
-            clearOldMessages(); // Ensure old messages are cleared before display
-            displayChatHistory(); // Display history
-            loadFavorites();
-            fetchModels(); // Fetch models and populate UI
-            // toggleSettings(); // Hide settings panel initially (it's hidden by default CSS)
-            autoResizeTextarea(); // Set initial height
-
-             // Periodically clean old messages (e.g., once an hour if the page is open)
-             // Be mindful of performance if the history is huge.
-             setInterval(clearOldMessages, 60 * 60 * 1000); // Every hour
+        
+        // 双击大厅按钮回到公共聊天
+        chatTitle.addEventListener('dblclick', () => {
+            if (currentRoomType === 'private') {
+                switchToPublic();
+            }
         });
-
+        
+        // 初始化应用
+        init();
+        
+        // 全局函数，供HTML onclick调用
+        window.startPrivateChat = startPrivateChat;
+        window.switchToRoom = switchToRoom;
     </script>
-
 </body>
 </html>
