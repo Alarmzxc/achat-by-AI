@@ -89,30 +89,6 @@
             font-weight: 500;
         }
         
-        .lobby-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.6rem 1rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-            margin-right: 1rem;
-        }
-        
-        .lobby-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
-        }
-        
-        .lobby-btn.active {
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--primary);
-        }
-        
         .logout-btn {
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -131,7 +107,7 @@
             transform: translateY(-1px);
         }
         
-        .btn-icon {
+        .logout-icon {
             margin-right: 0.5rem;
         }
         
@@ -276,27 +252,6 @@
             white-space: nowrap;
         }
         
-        .user-avatar-small {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-right: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .user-avatar-small:hover {
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
-        }
-        
         .room-info {
             display: flex;
             flex-direction: column;
@@ -436,13 +391,6 @@
         .message-sender {
             font-weight: 600;
             color: var(--primary);
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-        
-        .message-sender:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
         }
         
         .message-time {
@@ -613,18 +561,6 @@
             margin-right: 1rem;
         }
         
-        .unread-badge {
-            background: var(--error);
-            color: white;
-            font-size: 0.7rem;
-            padding: 0.2rem 0.4rem;
-            border-radius: 1rem;
-            margin-left: auto;
-            min-width: 1.2rem;
-            text-align: center;
-            animation: pulse 2s infinite;
-        }
-        
         @keyframes slideIn {
             from { 
                 opacity: 0; 
@@ -639,6 +575,43 @@
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        
+        .typing-dots {
+            display: flex;
+            margin-left: 0.5rem;
+        }
+        
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            margin: 0 1px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { 
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
         }
         
         /* 移动端适配 */
@@ -665,15 +638,6 @@
             
             .user-name {
                 display: none;
-            }
-            
-            .lobby-btn {
-                margin-right: 0.5rem;
-                padding: 0.5rem;
-            }
-            
-            .lobby-btn .btn-icon {
-                margin-right: 0;
             }
             
             .section-content.expanded {
@@ -756,17 +720,10 @@
         </div>
         
         <div class="user-info">
-            <button class="lobby-btn" id="lobby-button">
-                <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 7v10c0 2.21 3.79 4 8.5 4s8.5-1.79 8.5-4V7M4 7c0 2.21 3.79 4 8.5 4s8.5-1.79 8.5-4M4 7c0-2.21 3.79-4 8.5-4s8.5 1.79 8.5 4"></path>
-                </svg>
-                <span class="lobby-text">大厅</span>
-            </button>
-            
             <div class="user-avatar" id="user-avatar">U</div>
             <div class="user-name" id="current-user">用户</div>
             <button class="logout-btn" id="logout-button">
-                <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="logout-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                     <polyline points="16 17 21 12 16 7"></polyline>
                     <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -778,20 +735,20 @@
     
     <div class="main-container">
         <div class="sidebar" id="sidebar">
-            <!-- 私聊房间 -->
+            <!-- 房间列表 -->
             <div class="sidebar-section">
                 <div class="section-header" id="rooms-header">
                     <div class="section-title">
                         私聊房间
                         <span class="room-count" id="room-count">0</span>
                     </div>
-                    <svg class="section-toggle expanded" id="rooms-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="section-toggle" id="rooms-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                 </div>
-                <div class="section-content expanded" id="rooms-content">
+                <div class="section-content" id="rooms-content">
                     <div class="room-list" id="room-list">
-                        <div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">点击用户头像开始私聊</div>
+                        <!-- 房间列表由JS动态生成 -->
                     </div>
                 </div>
             </div>
@@ -803,11 +760,11 @@
                         在线用户
                         <span class="online-count" id="online-count">0</span>
                     </div>
-                    <svg class="section-toggle expanded" id="users-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="section-toggle" id="users-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                 </div>
-                <div class="section-content expanded" id="users-content">
+                <div class="section-content" id="users-content">
                     <div class="user-list" id="user-list">
                         <!-- 用户列表由JS动态生成 -->
                     </div>
@@ -831,7 +788,7 @@
                         <path d="M13 8l-3 3 3 3"></path>
                     </svg>
                     <div class="empty-title">开始聊天吧！</div>
-                    <div class="empty-description">在下方输入消息，或点击用户头像开始私聊</div>
+                    <div class="empty-description">在下方输入消息，或点击左侧用户开始私聊</div>
                 </div>
             </div>
             
@@ -858,7 +815,7 @@
     <script>
         // 全局变量
         const API_BASE = window.location.origin;
-        let currentUser = '';
+        const currentUser = localStorage.getItem('currentUser');
         
         // DOM元素
         const sidebar = document.getElementById('sidebar');
@@ -875,7 +832,6 @@
         const chatTitle = document.getElementById('chat-title');
         const chatInfoText = document.getElementById('chat-info-text');
         const chatStatus = document.getElementById('chat-status');
-        const lobbyButton = document.getElementById('lobby-button');
         const logoutButton = document.getElementById('logout-button');
         const notification = document.getElementById('notification');
         const notificationText = document.getElementById('notification-text');
@@ -888,23 +844,19 @@
         let pollInterval = null;
         let lastActiveCheck = 0;
         let isWindowFocused = true;
+        let lastMessageCount = 0;
         let animatedMessages = new Set();
         let firstLoad = true;
-        let roomMessages = new Map(); // 存储各房间的消息
-        let roomUnreadCount = new Map(); // 存储未读消息数
-        let allUsers = [];
-        let allRooms = [];
+        let isTyping = false;
+        let typingTimeout = null;
         
         // 初始化应用
         function init() {
-            // 检查用户是否已登录
-            const storedUser = localStorage.getItem('currentUser');
-            if (!storedUser) {
+            if (!currentUser) {
                 window.location.href = 'auth.html';
                 return;
             }
             
-            currentUser = storedUser;
             setupUI();
             setupEventListeners();
             startPolling();
@@ -916,7 +868,9 @@
             currentUserElement.textContent = currentUser;
             userAvatar.textContent = currentUser.charAt(0).toUpperCase();
             updateChatHeader();
-            updateLobbyButton();
+            
+            // 默认展开房间列表
+            toggleSection('rooms', true);
         }
         
         // 设置事件监听器
@@ -925,9 +879,6 @@
             sendButton.addEventListener('click', sendMessage);
             messageInput.addEventListener('keydown', handleKeydown);
             messageInput.addEventListener('input', handleInputChange);
-            
-            // 大厅按钮
-            lobbyButton.addEventListener('click', switchToLobby);
             
             // 登出
             logoutButton.addEventListener('click', logout);
@@ -943,11 +894,6 @@
             window.addEventListener('focus', () => {
                 isWindowFocused = true;
                 hideNotification();
-                // 清除当前房间未读消息
-                if (currentRoom !== 'public') {
-                    roomUnreadCount.set(currentRoom, 0);
-                    updateRoomList();
-                }
             });
             
             window.addEventListener('blur', () => {
@@ -963,17 +909,17 @@
         }
         
         // 切换侧边栏部分
-        function toggleSection(section) {
+        function toggleSection(section, forceExpand = false) {
             const content = document.getElementById(`${section}-content`);
             const toggle = document.getElementById(`${section}-toggle`);
             const isExpanded = content.classList.contains('expanded');
             
-            if (isExpanded) {
-                content.classList.remove('expanded');
-                toggle.classList.remove('expanded');
-            } else {
+            if (forceExpand || !isExpanded) {
                 content.classList.add('expanded');
                 toggle.classList.add('expanded');
+            } else {
+                content.classList.remove('expanded');
+                toggle.classList.remove('expanded');
             }
         }
         
@@ -985,23 +931,21 @@
         // 启动轮询
         function startPolling() {
             fetchData();
-            pollInterval = setInterval(fetchData, 3000); // 更频繁的轮询
+            pollInterval = setInterval(fetchData, 5000);
         }
         
         // 获取数据
         async function fetchData() {
             try {
                 await Promise.all([
-                    loadUsers(),
                     loadMessages(),
+                    loadUsers(),
                     loadRooms(),
                     updateActiveStatus()
                 ]);
             } catch (error) {
                 console.error("数据获取失败:", error);
-                if (!isWindowFocused) {
-                    showNotification("连接失败，请检查网络");
-                }
+                showNotification("连接失败，请检查网络");
             }
         }
         
@@ -1023,45 +967,6 @@
             }
         }
         
-        // 加载用户列表
-        async function loadUsers() {
-            try {
-                const response = await fetch(`${API_BASE}/api/users`);
-                const users = await response.json();
-                
-                if (!Array.isArray(users)) return;
-                
-                allUsers = users;
-                
-                // 排序：当前用户在前，其他用户按字母排序
-                const sortedUsers = users.sort((a, b) => {
-                    if (a === currentUser) return -1;
-                    if (b === currentUser) return 1;
-                    return a.localeCompare(b);
-                });
-                
-                userList.innerHTML = sortedUsers.map(user => {
-                    const isCurrentUserItem = user === currentUser;
-                    const statusClass = isCurrentUserItem ? 'current' : 'online';
-                    const itemClass = isCurrentUserItem ? 'current-user' : '';
-                    
-                    return `
-                        <div class="user-item ${itemClass}">
-                            <div class="user-avatar-small" ${!isCurrentUserItem ? `onclick="startPrivateChat('${escapeHTML(user)}')"` : ''} title="${isCurrentUserItem ? '这是你' : '点击开始私聊'}">
-                                ${escapeHTML(user.charAt(0).toUpperCase())}
-                            </div>
-                            <div class="user-name">${escapeHTML(user)}${isCurrentUserItem ? ' (我)' : ''}</div>
-                        </div>
-                    `;
-                }).join('');
-                
-                onlineCount.textContent = users.length;
-                
-            } catch (error) {
-                console.error("用户列表加载失败:", error);
-            }
-        }
-        
         // 加载消息
         async function loadMessages() {
             try {
@@ -1073,25 +978,17 @@
                     return;
                 }
                 
-                // 存储消息到房间缓存
-                const previousMessages = roomMessages.get(currentRoom) || [];
-                roomMessages.set(currentRoom, messages);
-                
-                // 检查新消息（仅当不是第一次加载时）
-                if (!firstLoad && messages.length > previousMessages.length) {
-                    const newMessagesCount = messages.length - previousMessages.length;
-                    
-                    // 如果窗口失去焦点或不在当前房间，显示通知
-                    if (!isWindowFocused) {
-                        const roomName = currentRoomType === 'public' ? '大厅' : `与${currentChatTarget}的私聊`;
-                        showNotification(`${roomName}有${newMessagesCount}条新消息`);
-                    }
+                // 检查新消息
+                if (messages.length > lastMessageCount && !isWindowFocused && !firstLoad) {
+                    const newCount = messages.length - lastMessageCount;
+                    showNotification(`您有 ${newCount} 条新消息`);
                 }
+                lastMessageCount = messages.length;
                 
                 // 显示/隐藏空状态
                 if (messages.length === 0) {
                     emptyState.style.display = 'flex';
-                    updateEmptyStateText();
+                    return;
                 } else {
                     emptyState.style.display = 'none';
                 }
@@ -1113,76 +1010,6 @@
             }
         }
         
-        // 加载房间列表
-        async function loadRooms() {
-            try {
-                const response = await fetch(`${API_BASE}/api/rooms?user=${encodeURIComponent(currentUser)}`);
-                const rooms = await response.json();
-                
-                if (!Array.isArray(rooms)) {
-                    allRooms = [];
-                    updateRoomList();
-                    return;
-                }
-                
-                allRooms = rooms;
-                
-                // 检查其他房间的新消息
-                for (const room of rooms) {
-                    if (room.id !== currentRoom) {
-                        const cachedMessages = roomMessages.get(room.id) || [];
-                        const lastMessage = room.lastMessage;
-                        
-                        if (lastMessage && (!cachedMessages.length || 
-                            new Date(lastMessage.time) > new Date(cachedMessages[cachedMessages.length - 1]?.time || 0))) {
-                            // 有新消息，增加未读计数
-                            const currentUnread = roomUnreadCount.get(room.id) || 0;
-                            roomUnreadCount.set(room.id, currentUnread + 1);
-                        }
-                    }
-                }
-                
-                updateRoomList();
-                
-            } catch (error) {
-                console.error("房间列表加载失败:", error);
-            }
-        }
-        
-        // 更新房间列表显示
-        function updateRoomList() {
-            if (allRooms.length === 0) {
-                roomList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">点击用户头像开始私聊</div>';
-                roomCount.textContent = '0';
-                return;
-            }
-            
-            roomList.innerHTML = allRooms.map(room => {
-                const lastMsg = room.lastMessage;
-                const timeStr = lastMsg ? formatTime(lastMsg.time) : '';
-                const lastMsgPreview = lastMsg ? 
-                    (lastMsg.from === currentUser ? '我: ' : '') + lastMsg.content : 
-                    '暂无消息';
-                
-                const isActive = currentRoom === room.id;
-                const unreadCount = roomUnreadCount.get(room.id) || 0;
-                
-                return `
-                    <div class="room-item ${isActive ? 'active' : ''}" onclick="switchToRoom('${escapeHTML(room.id)}', '${escapeHTML(room.displayName)}')">
-                        <div class="user-avatar-small">${escapeHTML(room.displayName.charAt(0).toUpperCase())}</div>
-                        <div class="room-info">
-                            <div class="room-name">${escapeHTML(room.displayName)}</div>
-                            <div class="room-last-message">${escapeHTML(lastMsgPreview)}</div>
-                        </div>
-                        <div class="room-time">${timeStr}</div>
-                        ${unreadCount > 0 && !isActive ? `<div class="unread-badge">${unreadCount}</div>` : ''}
-                    </div>
-                `;
-            }).join('');
-            
-            roomCount.textContent = allRooms.length;
-        }
-        
         // 渲染消息
         function renderMessages(messages) {
             const groupedMessages = groupMessagesByDate(messages);
@@ -1192,10 +1019,9 @@
                 html += `<div class="message-date">${date}</div>`;
                 
                 dailyMessages.forEach(msg => {
-                    const messageId = `${msg.from}_${msg.time}_${msg.message.substring(0, 10)}`;
-                    const isNew = !animatedMessages.has(messageId);
+                    const isNew = !animatedMessages.has(msg.id || msg.time);
                     if (isNew) {
-                        animatedMessages.add(messageId);
+                        animatedMessages.add(msg.id || msg.time);
                     }
                     html += createMessageHTML(msg, isNew && !firstLoad);
                 });
@@ -1244,14 +1070,14 @@
             });
             
             const isCurrentUser = msg.from === currentUser;
-            const isPrivate = currentRoomType === 'private';
+            const isPrivate = !!msg.to;
             const messageClass = isCurrentUser ? 'self' : 'other';
             const newClass = isNew ? 'new-message' : '';
             
             return `
                 <div class="message-item ${messageClass} ${newClass}">
                     <div class="message-header">
-                        <span class="message-sender" onclick="startPrivateChat('${escapeHTML(msg.from)}')">${escapeHTML(msg.from)}</span>
+                        <span class="message-sender">${escapeHTML(msg.from)}</span>
                         <span class="message-time">${formattedTime}</span>
                         ${isPrivate ? '<span class="message-private">私聊</span>' : ''}
                     </div>
@@ -1260,17 +1086,78 @@
             `;
         }
         
-        // 更新空状态文本
-        function updateEmptyStateText() {
-            const emptyTitle = emptyState.querySelector('.empty-title');
-            const emptyDescription = emptyState.querySelector('.empty-description');
-            
-            if (currentRoomType === 'private') {
-                emptyTitle.textContent = `与 ${currentChatTarget} 开始私聊吧！`;
-                emptyDescription.textContent = '在下方输入消息开始对话';
-            } else {
-                emptyTitle.textContent = '欢迎来到大厅！';
-                emptyDescription.textContent = '在下方输入消息，或点击用户头像开始私聊';
+        // 加载用户列表
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/users`);
+                const users = await response.json();
+                
+                if (!Array.isArray(users)) return;
+                
+                // 排序：当前用户在前，其他用户按字母排序
+                const sortedUsers = users.sort((a, b) => {
+                    if (a === currentUser) return -1;
+                    if (b === currentUser) return 1;
+                    return a.localeCompare(b);
+                });
+                
+                userList.innerHTML = sortedUsers.map(user => {
+                    const isCurrentUserItem = user === currentUser;
+                    const statusClass = isCurrentUserItem ? 'current' : 'online';
+                    const itemClass = isCurrentUserItem ? 'current-user' : '';
+                    
+                    return `
+                        <div class="user-item ${itemClass}" data-username="${escapeHTML(user)}" ${!isCurrentUserItem ? 'onclick="startPrivateChat(this)"' : ''}>
+                            <div class="user-status ${statusClass}"></div>
+                            <div class="user-name">${escapeHTML(user)}${isCurrentUserItem ? ' (我)' : ''}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                onlineCount.textContent = users.length;
+                
+            } catch (error) {
+                console.error("用户列表加载失败:", error);
+            }
+        }
+        
+        // 加载房间列表
+        async function loadRooms() {
+            try {
+                const response = await fetch(`${API_BASE}/api/rooms?user=${encodeURIComponent(currentUser)}`);
+                const rooms = await response.json();
+                
+                if (!Array.isArray(rooms)) {
+                    roomList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">暂无私聊</div>';
+                    roomCount.textContent = '0';
+                    return;
+                }
+                
+                roomList.innerHTML = rooms.map(room => {
+                    const lastMsg = room.lastMessage;
+                    const timeStr = lastMsg ? formatTime(lastMsg.time) : '';
+                    const lastMsgPreview = lastMsg ? 
+                        (lastMsg.from === currentUser ? '我: ' : '') + lastMsg.content : 
+                        '暂无消息';
+                    
+                    const isActive = currentRoom === room.id;
+                    
+                    return `
+                        <div class="room-item ${isActive ? 'active' : ''}" data-room-id="${escapeHTML(room.id)}" data-room-name="${escapeHTML(room.displayName)}" onclick="switchToRoom(this)">
+                            <div class="user-status online"></div>
+                            <div class="room-info">
+                                <div class="room-name">${escapeHTML(room.displayName)}</div>
+                                <div class="room-last-message">${escapeHTML(lastMsgPreview)}</div>
+                            </div>
+                            <div class="room-time">${timeStr}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                roomCount.textContent = rooms.length;
+                
+            } catch (error) {
+                console.error("房间列表加载失败:", error);
             }
         }
         
@@ -1304,11 +1191,8 @@
                     messageInput.value = '';
                     messageInput.style.height = 'auto';
                     
-                    // 立即刷新当前房间消息
-                    setTimeout(() => {
-                        loadMessages();
-                        loadRooms(); // 更新房间列表中的最后消息
-                    }, 100);
+                    // 立即刷新消息
+                    setTimeout(loadMessages, 100);
                 } else {
                     const result = await response.json();
                     showNotification(result.error || "消息发送失败");
@@ -1336,17 +1220,24 @@
             messageInput.style.height = 'auto';
             const scrollHeight = messageInput.scrollHeight;
             messageInput.style.height = Math.min(scrollHeight, 120) + 'px';
+            
+            // 简单的打字指示器逻辑
+            if (!isTyping && messageInput.value.length > 0) {
+                isTyping = true;
+            }
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+            }, 1000);
         }
         
         // 开始私聊
-        function startPrivateChat(username) {
+        function startPrivateChat(userElement) {
+            const username = userElement.dataset.username;
             if (username === currentUser) return;
             
             const roomId = getRoomId(currentUser, username);
-            
-            // 清除该房间的未读消息
-            roomUnreadCount.set(roomId, 0);
-            
             switchToPrivateRoom(roomId, username);
             
             // 移动端关闭侧边栏
@@ -1356,9 +1247,9 @@
         }
         
         // 切换到房间
-        function switchToRoom(roomId, roomName) {
-            // 清除该房间的未读消息
-            roomUnreadCount.set(roomId, 0);
+        function switchToRoom(roomElement) {
+            const roomId = roomElement.dataset.roomId;
+            const roomName = roomElement.dataset.roomName;
             
             switchToPrivateRoom(roomId, roomName);
             
@@ -1375,29 +1266,20 @@
             currentChatTarget = targetUser;
             
             updateChatHeader();
-            updateLobbyButton();
             updateRoomActiveState();
             loadMessages();
-            updateRoomList(); // 更新未读状态
             messageInput.focus();
         }
         
         // 切换到大厅
-        function switchToLobby() {
+        function switchToPublic() {
             currentRoom = 'public';
             currentRoomType = 'public';
             currentChatTarget = '';
             
             updateChatHeader();
-            updateLobbyButton();
             updateRoomActiveState();
             loadMessages();
-            messageInput.focus();
-            
-            // 移动端关闭侧边栏
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('active');
-            }
         }
         
         // 更新聊天头部
@@ -1413,26 +1295,14 @@
             }
         }
         
-        // 更新大厅按钮状态
-        function updateLobbyButton() {
-            if (currentRoomType === 'public') {
-                lobbyButton.classList.add('active');
-            } else {
-                lobbyButton.classList.remove('active');
-            }
-        }
-        
         // 更新房间激活状态
         function updateRoomActiveState() {
             document.querySelectorAll('.room-item').forEach(item => {
                 item.classList.remove('active');
+                if (item.dataset.roomId === currentRoom) {
+                    item.classList.add('active');
+                }
             });
-            
-            // 找到当前房间并标记为活跃
-            const activeRoomElement = document.querySelector(`[onclick*="${currentRoom}"]`);
-            if (activeRoomElement) {
-                activeRoomElement.classList.add('active');
-            }
         }
         
         // 生成房间ID
@@ -1459,17 +1329,10 @@
         function formatTime(timestamp) {
             const date = new Date(timestamp);
             const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / (1000 * 60));
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
             
-            if (diffMins < 1) {
-                return '刚刚';
-            } else if (diffMins < 60) {
-                return `${diffMins}分钟前`;
-            } else if (diffHours < 24) {
-                return `${diffHours}小时前`;
+            if (diffDays === 0) {
+                return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             } else if (diffDays === 1) {
                 return '昨天';
             } else if (diffDays < 7) {
@@ -1505,6 +1368,13 @@
         window.addEventListener('beforeunload', () => {
             if (pollInterval) {
                 clearInterval(pollInterval);
+            }
+        });
+        
+        // 双击大厅按钮回到公共聊天
+        chatTitle.addEventListener('dblclick', () => {
+            if (currentRoomType === 'private') {
+                switchToPublic();
             }
         });
         
