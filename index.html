@@ -85,6 +85,7 @@
         }
         
         .user-name {
+            /* 用户列表中的用户名样式 */
             margin-right: 1.5rem;
             font-weight: 500;
         }
@@ -664,6 +665,7 @@
             }
             
             .user-name {
+            /* 用户列表中的用户名样式 */
                 display: none;
             }
             
@@ -734,7 +736,12 @@
         .room-list::-webkit-scrollbar-thumb:hover {
             background: var(--text-muted);
         }
-    </style>
+    
+        .header-user-name {
+            margin-right: 1.5rem;
+            font-weight: 500;
+        }
+</style>
 </head>
 <body>
     <div class="header">
@@ -764,7 +771,7 @@
             </button>
             
             <div class="user-avatar" id="user-avatar">U</div>
-            <div class="user-name" id="current-user">用户</div>
+            <div class="header-user-name" id="current-user">用户</div>
             <button class="logout-btn" id="logout-button">
                 <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -985,7 +992,7 @@
         // 启动轮询
         function startPolling() {
             fetchData();
-            pollInterval = setInterval(fetchData, 3000); // 更频繁的轮询
+            pollInterval = setInterval(fetchData, 1000); // 更频繁的轮询
         }
         
         // 获取数据
@@ -1097,7 +1104,7 @@
                 }
                 
                 // 保存滚动位置
-                const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 50;
+                const isAtBottom = Math.abs(messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight) < 50;
                 
                 // 渲染消息
                 renderMessages(messages);
