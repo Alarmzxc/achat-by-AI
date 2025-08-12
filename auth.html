@@ -405,6 +405,11 @@
         const registerForm = document.getElementById('register-form');
         const loginButton = document.getElementById('login-button');
         const registerButton = document.getElementById('register-button');
+        const loginUsername = document.getElementById('login-username');
+        const loginPassword = document.getElementById('login-password');
+        const registerUsername = document.getElementById('register-username');
+        const registerPassword = document.getElementById('register-password');
+        const registerConfirm = document.getElementById('register-confirm');
         
         // 切换登录/注册标签
         tabLogin.addEventListener('click', () => {
@@ -493,9 +498,8 @@
         // 处理登录
         async function handleLogin(e) {
             e.preventDefault();
-            
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value;
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value;
             
             if (!username || !password) {
                 showMessage('login-error', '用户名和密码不能为空', true);
@@ -503,21 +507,20 @@
             }
             
             loginButton.disabled = true;
-            loginButton.textContent = '登录中...';
+            loginButton.innerHTML = `<svg class="button-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>登录中...`;
             
             try {
                 const hashedPassword = await hashPassword(password);
-                const response = await fetch(`${API_BASE}/api/login`, {
+                const response = await fetch(`${API_BASE}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password: hashedPassword })
                 });
                 
                 const result = await response.json();
-                
                 if (response.ok) {
-                    showMessage('login-success', '登录成功，正在跳转...');
-                    localStorage.setItem('currentUser', username);
+                    showMessage('login-success', '登录成功！', false);
+                    localStorage.setItem('username', username);
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 1000);
@@ -528,7 +531,7 @@
                 showMessage('login-error', '网络错误，请稍后重试', true);
             } finally {
                 loginButton.disabled = false;
-                loginButton.innerHTML = '<svg class="button-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>登录';
+                loginButton.innerHTML = `<svg class="button-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>登录`;
             }
         }
         
@@ -536,9 +539,9 @@
         async function handleRegister(e) {
             e.preventDefault();
             
-            const username = document.getElementById('register-username').value.trim();
-            const password = document.getElementById('register-password').value;
-            const confirmPassword = document.getElementById('register-confirm').value;
+            const username = registerUsername.value.trim();
+            const password = registerPassword.value;
+            const confirmPassword = registerConfirm.value;
             
             // 验证输入
             if (!username || !password || !confirmPassword) {
@@ -562,21 +565,20 @@
             }
             
             registerButton.disabled = true;
-            registerButton.textContent = '注册中...';
+            registerButton.innerHTML = `<svg class="button-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>注册中...`;
             
             try {
                 const hashedPassword = await hashPassword(password);
-                const response = await fetch(`${API_BASE}/api/register`, {
+                const response = await fetch(`${API_BASE}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password: hashedPassword })
                 });
                 
                 const result = await response.json();
-                
                 if (response.ok) {
-                    showMessage('register-success', '注册成功！正在自动登录...');
-                    localStorage.setItem('currentUser', username);
+                    showMessage('register-success', '注册成功！正在自动登录...', false);
+                    localStorage.setItem('username', username);
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 1000);
@@ -587,7 +589,7 @@
                 showMessage('register-error', '网络错误，请稍后重试', true);
             } finally {
                 registerButton.disabled = false;
-                registerButton.innerHTML = '<svg class="button-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>注册';
+                registerButton.innerHTML = `<svg class="button-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>注册`;
             }
         }
         
@@ -598,7 +600,7 @@
         });
         
         // 检查是否已登录
-        if (localStorage.getItem('currentUser')) {
+        if (localStorage.getItem('username')) {
             window.location.href = 'index.html';
         }
         
