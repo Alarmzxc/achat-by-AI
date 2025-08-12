@@ -9,36 +9,108 @@
         :root {
             --primary: #3498db;
             --primary-dark: #2980b9;
-            --primary-light: #85c1e9;
-            --secondary: #2ecc71;
+            --secondary: #9b59b6;
             --error: #e74c3c;
-            --warning: #f39c12;
+            --success: #2ecc71;
             --text: #2c3e50;
             --text-light: #7f8c8d;
             --text-muted: #95a5a6;
-            --background: #f8f9fa;
-            --card-bg: #ffffff;
+            --light-gray: #f8f9fa;
             --border: #dee2e6;
             --border-light: #e9ecef;
-            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
-            --sidebar-width: 320px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --card-bg: #ffffff;
         }
-        
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--background);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: var(--text);
-            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-light);
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .users-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+
+        .users-list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .users-list-item:hover, .users-list-item.active {
+            background-color: var(--light-gray);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 1rem;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-weight: 500;
+            white-space: nowrap;
             overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         .header {
@@ -47,71 +119,31 @@
             padding: 1rem 1.5rem;
             display: flex;
             align-items: center;
-            box-shadow: var(--shadow);
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             z-index: 100;
-            flex-shrink: 0;
         }
         
-        .logo {
-            display: flex;
-            align-items: center;
+        .header-title {
             font-weight: 600;
             font-size: 1.2rem;
-            margin-right: auto;
-        }
-        
-        .logo-icon {
-            margin-right: 0.8rem;
             display: flex;
+            align-items: center;
         }
-        
+
+        .header-title-icon {
+            margin-right: 0.8rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
         .user-info {
             display: flex;
             align-items: center;
-        }
-        
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            margin-right: 0.8rem;
-            font-size: 1.1rem;
-        }
-        
-        .user-name {
-            /* 用户列表中的用户名样式 */
-            margin-right: 1.5rem;
-            font-weight: 500;
-        }
-        
-        .lobby-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.6rem 1rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-            margin-right: 1rem;
-        }
-        
-        .lobby-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
-        }
-        
-        .lobby-btn.active {
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--primary);
         }
         
         .logout-btn {
@@ -126,7 +158,7 @@
             align-items: center;
             font-size: 0.9rem;
         }
-        
+
         .logout-btn:hover {
             background: rgba(255, 255, 255, 0.25);
             transform: translateY(-1px);
@@ -136,281 +168,20 @@
             margin-right: 0.5rem;
         }
         
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-        
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--card-bg);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-        
-        .sidebar-section {
-            border-bottom: 1px solid var(--border-light);
-        }
-        
-        .section-header {
-            padding: 1rem 1.5rem;
-            background: var(--light-gray);
-            border-bottom: 1px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .section-header:hover {
-            background: #e9ecef;
-        }
-        
-        .section-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-        }
-        
-        .section-toggle {
-            color: var(--text-light);
-            transition: transform 0.2s ease;
-        }
-        
-        .section-toggle.expanded {
-            transform: rotate(180deg);
-        }
-        
-        .section-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .section-content.expanded {
-            max-height: 300px;
-        }
-        
-        .online-count {
-            background: var(--secondary);
-            color: white;
-            border-radius: 1rem;
-            padding: 0.2rem 0.6rem;
-            font-size: 0.8rem;
-            margin-left: 0.5rem;
-            font-weight: 500;
-        }
-        
-        .room-count {
-            background: var(--primary);
-            color: white;
-            border-radius: 1rem;
-            padding: 0.2rem 0.6rem;
-            font-size: 0.8rem;
-            margin-left: 0.5rem;
-            font-weight: 500;
-        }
-        
-        .user-list, .room-list {
-            padding: 0.5rem;
-            overflow-y: auto;
-        }
-        
-        .user-item, .room-item {
-            display: flex;
-            align-items: center;
-            padding: 0.8rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.3rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-        
-        .user-item:hover, .room-item:hover {
-            background: rgba(52, 152, 219, 0.08);
-            border-color: rgba(52, 152, 219, 0.2);
-        }
-        
-        .user-item.current-user {
-            background: rgba(46, 204, 113, 0.1);
-            border-color: rgba(46, 204, 113, 0.3);
-            cursor: default;
-        }
-        
-        .room-item.active {
-            background: rgba(52, 152, 219, 0.15);
-            border-color: var(--primary);
-        }
-        
-        .user-status {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 0.8rem;
-            flex-shrink: 0;
-        }
-        
-        .user-status.online {
-            background: var(--secondary);
-            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.3);
-        }
-        
-        .user-status.current {
-            background: var(--warning);
-            box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.3);
-        }
-        
-        .user-name, .room-name {
-            font-weight: 500;
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .user-avatar-small {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-right: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .user-avatar-small:hover {
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
-        }
-        
-        .room-info {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .room-name {
-            font-size: 0.95rem;
-            margin-bottom: 0.2rem;
-        }
-        
-        .room-last-message {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .room-time {
-            font-size: 0.75rem;
-            color: var(--text-light);
-            margin-left: 0.5rem;
-            flex-shrink: 0;
-        }
-        
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow: hidden;
-        }
-        
-        .chat-header {
-            padding: 1rem 1.5rem;
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            flex-shrink: 0;
-        }
-        
-        .chat-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        
-        .chat-info {
-            margin-left: auto;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        .chat-status {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-        
-        .chat-status.public {
-            background: var(--secondary);
-        }
-        
-        .chat-status.private {
-            background: var(--primary);
-        }
-        
         .messages-container {
             flex: 1;
             overflow-y: auto;
-            padding: 1rem;
-            background: #f1f3f4;
+            padding: 1rem 1.5rem;
+            background: var(--light-gray);
             scroll-behavior: smooth;
         }
-        
-        .message-date {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            margin: 1.5rem 0;
-            position: relative;
-        }
-        
-        .message-date::before,
-        .message-date::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            width: calc(50% - 60px);
-            height: 1px;
-            background: var(--border);
-        }
-        
-        .message-date::before {
-            left: 0;
-        }
-        
-        .message-date::after {
-            right: 0;
-        }
-        
+
         .message-item {
             max-width: 75%;
             margin-bottom: 1rem;
             display: flex;
             flex-direction: column;
+            animation: slideIn 0.3s ease-out;
         }
         
         .message-item.self {
@@ -421,10 +192,6 @@
         .message-item.other {
             align-self: flex-start;
             align-items: flex-start;
-        }
-        
-        .message-item.new-message {
-            animation: slideIn 0.3s ease-out;
         }
         
         .message-header {
@@ -451,21 +218,11 @@
             margin-left: 0.6rem;
         }
         
-        .message-private {
-            background: var(--secondary);
-            color: white;
-            font-size: 0.7rem;
-            padding: 0.1rem 0.4rem;
-            border-radius: 0.25rem;
-            margin-left: 0.5rem;
-        }
-        
         .message-content {
             background: white;
             padding: 0.8rem 1rem;
             border-radius: 1rem;
-            box-shadow: var(--shadow);
-            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             word-break: break-word;
             line-height: 1.4;
             border: 1px solid var(--border-light);
@@ -481,6 +238,10 @@
             border-bottom-left-radius: 0.3rem;
         }
         
+        .message-item.self .message-content.private {
+             background: var(--secondary);
+        }
+
         .input-area {
             padding: 1rem 1.5rem;
             background: var(--card-bg);
@@ -490,7 +251,7 @@
             gap: 0.8rem;
             flex-shrink: 0;
         }
-        
+
         .message-input {
             flex: 1;
             padding: 0.8rem 1rem;
@@ -503,17 +264,13 @@
             font-family: inherit;
             transition: border-color 0.2s ease;
         }
-        
+
         .message-input:focus {
             border-color: var(--primary);
             outline: none;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
-        
-        .message-input::placeholder {
-            color: var(--text-muted);
-        }
-        
+
         .send-button {
             background: var(--primary);
             color: white;
@@ -528,104 +285,24 @@
             transition: all 0.2s ease;
             flex-shrink: 0;
         }
-        
+
         .send-button:hover:not(:disabled) {
             background: var(--primary-dark);
             transform: scale(1.05);
         }
-        
+
         .send-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
         
-        .notification {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: white;
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: var(--shadow-hover);
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-            transform: translateX(120%);
-            opacity: 0;
-            transition: all 0.3s ease;
-            border-left: 4px solid var(--secondary);
-            max-width: 300px;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        
-        .notification-icon {
-            margin-right: 0.8rem;
-            color: var(--secondary);
-            flex-shrink: 0;
-        }
-        
-        .notification-text {
-            color: var(--text);
-            font-weight: 500;
-        }
-        
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text-muted);
-            text-align: center;
-            padding: 2rem;
-        }
-        
-        .empty-icon {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-        
-        .empty-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-light);
-        }
-        
-        .empty-description {
+        .typing-indicator {
             font-size: 0.9rem;
-            line-height: 1.5;
-        }
-        
-        .mobile-toggle {
-            display: none;
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            color: white;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            margin-right: 1rem;
-        }
-        
-        .unread-badge {
-            background: var(--error);
-            color: white;
-            font-size: 0.7rem;
-            padding: 0.2rem 0.4rem;
-            border-radius: 1rem;
-            margin-left: auto;
-            min-width: 1.2rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
             text-align: center;
-            animation: pulse 2s infinite;
         }
-        
+
         @keyframes slideIn {
             from { 
                 opacity: 0; 
@@ -637,215 +314,103 @@
             }
         }
         
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                top: 72px;
-                bottom: 0;
-                width: 85%;
-                max-width: 300px;
-                transition: left 0.3s ease;
-                z-index: 50;
-                box-shadow: var(--shadow-hover);
-            }
-            
-            .sidebar.active {
-                left: 0;
-            }
-            
-            .mobile-toggle {
-                display: flex;
-            }
-            
-            .user-name {
-            /* 用户列表中的用户名样式 */
-                display: none;
-            }
-            
-            .lobby-btn {
-                margin-right: 0.5rem;
-                padding: 0.5rem;
-            }
-            
-            .lobby-btn .btn-icon {
-                margin-right: 0;
-            }
-            
-            .section-content.expanded {
-                max-height: 200px;
-            }
-            
-            .message-item {
-                max-width: 90%;
-            }
-            
-            .input-area {
-                padding: 0.8rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .header {
-                padding: 0.8rem 1rem;
-            }
-            
-            .logo {
-                font-size: 1rem;
-            }
-            
-            .user-avatar {
-                width: 32px;
-                height: 32px;
-                font-size: 1rem;
-            }
-            
-            .message-input {
-                font-size: 16px; /* 防止iOS缩放 */
-            }
-        }
-        
         /* 滚动条样式 */
-        .messages-container::-webkit-scrollbar,
-        .user-list::-webkit-scrollbar,
-        .room-list::-webkit-scrollbar {
+        .messages-container::-webkit-scrollbar, .users-list::-webkit-scrollbar {
             width: 6px;
         }
-        
-        .messages-container::-webkit-scrollbar-track,
-        .user-list::-webkit-scrollbar-track,
-        .room-list::-webkit-scrollbar-track {
+        .messages-container::-webkit-scrollbar-track, .users-list::-webkit-scrollbar-track {
             background: transparent;
         }
-        
-        .messages-container::-webkit-scrollbar-thumb,
-        .user-list::-webkit-scrollbar-thumb,
-        .room-list::-webkit-scrollbar-thumb {
+        .messages-container::-webkit-scrollbar-thumb, .users-list::-webkit-scrollbar-thumb {
             background: var(--border);
             border-radius: 3px;
         }
-        
-        .messages-container::-webkit-scrollbar-thumb:hover,
-        .user-list::-webkit-scrollbar-thumb:hover,
-        .room-list::-webkit-scrollbar-thumb:hover {
+        .messages-container::-webkit-scrollbar-thumb:hover, .users-list::-webkit-scrollbar-thumb:hover {
             background: var(--text-muted);
         }
-    
-        .header-user-name {
-            margin-right: 1.5rem;
-            font-weight: 500;
+        
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 50px;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 1rem;
+                border-bottom: 1px solid var(--border-light);
+            }
+            .sidebar-header {
+                display: none;
+            }
+            .users-list {
+                display: flex;
+                overflow-x: auto;
+                white-space: nowrap;
+                padding: 0;
+            }
+            .users-list-item {
+                padding: 0.5rem;
+                flex-direction: column;
+            }
+            .user-avatar {
+                margin: 0;
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+            }
+            .user-name {
+                font-size: 0.8rem;
+            }
+            .main-chat {
+                flex: 1;
+            }
         }
-</style>
+    </style>
 </head>
 <body>
-    <div class="header">
-        <button class="mobile-toggle" id="mobile-toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
-        
-        <div class="logo">
-            <div class="logo-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-            </div>
-            Cloudflare 聊天室
+    <div class="chat-container">
+        <div class="sidebar">
+            <div class="sidebar-header">在线用户</div>
+            <div class="users-list" id="users-list">
+                <div class="users-list-item active" data-room-id="public">
+                    <div class="user-avatar">公</div>
+                    <div class="user-name">公共聊天室</div>
+                </div>
+                </div>
         </div>
-        
-        <div class="user-info">
-            <button class="lobby-btn" id="lobby-button">
-                <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 7v10c0 2.21 3.79 4 8.5 4s8.5-1.79 8.5-4V7M4 7c0 2.21 3.79 4 8.5 4s8.5-1.79 8.5-4M4 7c0-2.21 3.79-4 8.5-4s8.5 1.79 8.5 4"></path>
-                </svg>
-                <span class="lobby-text">大厅</span>
-            </button>
-            
-            <div class="user-avatar" id="user-avatar">U</div>
-            <div class="header-user-name" id="current-user">用户</div>
-            <button class="logout-btn" id="logout-button">
-                <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-                退出
-            </button>
-        </div>
-    </div>
-    
-    <div class="main-container">
-        <div class="sidebar" id="sidebar">
-            <!-- 私聊房间 -->
-            <div class="sidebar-section">
-                <div class="section-header" id="rooms-header">
-                    <div class="section-title">
-                        私聊房间
-                        <span class="room-count" id="room-count">0</span>
-                    </div>
-                    <svg class="section-toggle expanded" id="rooms-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
+        <div class="main-chat">
+            <div class="header">
+                <div class="header-title" id="chat-header-title">
+                    <svg class="header-title-icon" id="chat-header-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
+                    公共聊天室
                 </div>
-                <div class="section-content expanded" id="rooms-content">
-                    <div class="room-list" id="room-list">
-                        <div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">点击用户头像开始私聊</div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="user-avatar"></div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- 在线用户 -->
-            <div class="sidebar-section">
-                <div class="section-header" id="users-header">
-                    <div class="section-title">
-                        在线用户
-                        <span class="online-count" id="online-count">0</span>
-                    </div>
-                    <svg class="section-toggle expanded" id="users-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </div>
-                <div class="section-content expanded" id="users-content">
-                    <div class="user-list" id="user-list">
-                        <!-- 用户列表由JS动态生成 -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="chat-container">
-            <div class="chat-header">
-                <div class="chat-title" id="chat-title">大厅聊天</div>
-                <div class="chat-info" id="chat-info">
-                    <div class="chat-status public" id="chat-status"></div>
-                    <span id="chat-info-text">所有用户可见</span>
+                    <button class="logout-btn" id="logout-button">
+                        <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        退出
+                    </button>
                 </div>
             </div>
             
             <div class="messages-container" id="messages-container">
-                <div class="empty-state" id="empty-state">
-                    <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        <path d="M13 8l-3 3 3 3"></path>
-                    </svg>
-                    <div class="empty-title">开始聊天吧！</div>
-                    <div class="empty-description">在下方输入消息，或点击用户头像开始私聊</div>
                 </div>
-            </div>
-            
+
             <div class="input-area">
-                <textarea class="message-input" id="message-input" placeholder="输入消息... (Shift+Enter换行)" rows="1"></textarea>
-                <button class="send-button" id="send-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <textarea id="message-input" class="message-input" placeholder="输入消息..."></textarea>
+                <button id="send-button" class="send-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
@@ -853,674 +418,247 @@
             </div>
         </div>
     </div>
-    
-    <div class="notification" id="notification">
-        <svg class="notification-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        <span class="notification-text" id="notification-text">新消息</span>
-    </div>
-
     <script>
-        // 全局变量
-        const API_BASE = window.location.origin;
-        let currentUser = '';
-        
-        // DOM元素
-        const sidebar = document.getElementById('sidebar');
-        const mobileToggle = document.getElementById('mobile-toggle');
+        const API_BASE = window.location.origin + '/api';
         const messagesContainer = document.getElementById('messages-container');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
-        const userList = document.getElementById('user-list');
-        const roomList = document.getElementById('room-list');
-        const onlineCount = document.getElementById('online-count');
-        const roomCount = document.getElementById('room-count');
-        const currentUserElement = document.getElementById('current-user');
-        const userAvatar = document.getElementById('user-avatar');
-        const chatTitle = document.getElementById('chat-title');
-        const chatInfoText = document.getElementById('chat-info-text');
-        const chatStatus = document.getElementById('chat-status');
-        const lobbyButton = document.getElementById('lobby-button');
         const logoutButton = document.getElementById('logout-button');
-        const notification = document.getElementById('notification');
-        const notificationText = document.getElementById('notification-text');
-        const emptyState = document.getElementById('empty-state');
-        
-        // 状态变量
-        let currentRoom = 'public';
-        let currentRoomType = 'public'; // 'public' 或 'private'
-        let currentChatTarget = '';
-        let pollInterval = null;
-        let lastActiveCheck = 0;
-        let isWindowFocused = true;
-        let animatedMessages = new Set();
-        let firstLoad = true;
-        let roomMessages = new Map(); // 存储各房间的消息
-        let roomUnreadCount = new Map(); // 存储未读消息数
-        let allUsers = [];
-        let allRooms = [];
-        
-        // 初始化应用
-        function init() {
-            // 检查用户是否已登录
-            const storedUser = localStorage.getItem('currentUser');
-            if (!storedUser) {
-                window.location.href = 'auth.html';
-                return;
-            }
-            
-            currentUser = storedUser;
-            setupUI();
-            setupEventListeners();
-            startPolling();
-            fetchData();
+        const userAvatar = document.getElementById('user-avatar');
+        const usersList = document.getElementById('users-list');
+        const chatHeaderTitle = document.getElementById('chat-header-title');
+        const chatHeaderIcon = document.getElementById('chat-header-icon');
+
+        let username = localStorage.getItem('username');
+        let currentRoomId = 'public';
+        let lastMessageIds = { 'public': null };
+
+        // 检查登录状态
+        if (!username) {
+            window.location.href = '/auth.html';
+        } else {
+            userAvatar.textContent = username.charAt(0).toUpperCase();
         }
-        
-        // 设置UI
-        function setupUI() {
-            currentUserElement.textContent = currentUser;
-            userAvatar.textContent = currentUser.charAt(0).toUpperCase();
-            updateChatHeader();
-            updateLobbyButton();
+
+        // 退出登录
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('username');
+            window.location.href = '/auth.html';
+        });
+
+        // 渲染单条消息
+        function renderMessage(msg) {
+            const isSelf = msg.from === username;
+            const messageItem = document.createElement('div');
+            messageItem.classList.add('message-item', isSelf ? 'self' : 'other');
+
+            const isPrivate = msg.to && msg.from !== username;
+            
+            messageItem.innerHTML = `
+                <div class="message-header">
+                    <span class="message-sender">${msg.from}</span>
+                    <span class="message-time">${new Date(msg.time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div class="message-content ${isPrivate ? 'private' : ''}">
+                    ${msg.message}
+                </div>
+            `;
+            messagesContainer.appendChild(messageItem);
         }
-        
-        // 设置事件监听器
-        function setupEventListeners() {
-            // 发送消息
-            sendButton.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keydown', handleKeydown);
-            messageInput.addEventListener('input', handleInputChange);
-            
-            // 大厅按钮
-            lobbyButton.addEventListener('click', switchToLobby);
-            
-            // 登出
-            logoutButton.addEventListener('click', logout);
-            
-            // 移动端侧边栏
-            mobileToggle.addEventListener('click', toggleSidebar);
-            
-            // 侧边栏折叠
-            document.getElementById('rooms-header').addEventListener('click', () => toggleSection('rooms'));
-            document.getElementById('users-header').addEventListener('click', () => toggleSection('users'));
-            
-            // 窗口焦点
-            window.addEventListener('focus', () => {
-                isWindowFocused = true;
-                hideNotification();
-                // 清除当前房间未读消息
-                if (currentRoom !== 'public') {
-                    roomUnreadCount.set(currentRoom, 0);
-                    updateRoomList();
-                }
+
+        // 自动滚动到底部
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // 切换聊天房间
+        function switchRoom(newRoomId, title, isPrivate) {
+            currentRoomId = newRoomId;
+            messagesContainer.innerHTML = '';
+            chatHeaderTitle.textContent = title;
+            const chatIconPath = isPrivate 
+                ? '<path d="M22 10s-.65-.63-1.63-1.12a4 4 0 1 0-3.5 3.5c.49.98 1.12 1.63 1.12 1.63s-.65.63-1.63 1.12a4 4 0 1 1-3.5 3.5c.49-.98 1.12-1.63 1.12-1.63s-.65-.63-1.63-1.12a4 4 0 1 0-3.5 3.5c.49-.98 1.12-1.63 1.12-1.63s-.65-.63-1.63-1.12a4 4 0 1 0-3.5 3.5c.49-.98 1.12-1.63 1.12-1.63zM10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2zM10 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"></path>' 
+                : '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>';
+            chatHeaderIcon.innerHTML = chatIconPath;
+
+            document.querySelectorAll('.users-list-item').forEach(item => {
+                item.classList.remove('active');
             });
-            
-            window.addEventListener('blur', () => {
-                isWindowFocused = false;
-            });
-            
-            // 点击聊天区域关闭侧边栏(移动端)
-            messagesContainer.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('active');
-                }
-            });
+            document.querySelector(`[data-room-id="${newRoomId}"]`).classList.add('active');
+
+            fetchMessages(currentRoomId);
         }
-        
-        // 切换侧边栏部分
-        function toggleSection(section) {
-            const content = document.getElementById(`${section}-content`);
-            const toggle = document.getElementById(`${section}-toggle`);
-            const isExpanded = content.classList.contains('expanded');
-            
-            if (isExpanded) {
-                content.classList.remove('expanded');
-                toggle.classList.remove('expanded');
-            } else {
-                content.classList.add('expanded');
-                toggle.classList.add('expanded');
-            }
-        }
-        
-        // 切换移动端侧边栏
-        function toggleSidebar() {
-            sidebar.classList.toggle('active');
-        }
-        
-        // 启动轮询
-        function startPolling() {
-            fetchData();
-            pollInterval = setInterval(fetchData, 1000); // 更频繁的轮询
-        }
-        
-        // 获取数据
-        async function fetchData() {
+
+        // 获取消息
+        async function fetchMessages(roomId) {
             try {
-                await Promise.all([
-                    loadUsers(),
-                    loadMessages(),
-                    loadRooms(),
-                    updateActiveStatus()
-                ]);
-            } catch (error) {
-                console.error("数据获取失败:", error);
-                if (!isWindowFocused) {
-                    showNotification("连接失败，请检查网络");
-                }
-            }
-        }
-        
-        // 更新活跃状态
-        async function updateActiveStatus() {
-            const now = Date.now();
-            if (now - lastActiveCheck < 30000) return;
-            
-            lastActiveCheck = now;
-            
-            try {
-                await fetch(`${API_BASE}/api/active`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentUser })
-                });
-            } catch (error) {
-                console.error("活跃状态更新失败:", error);
-            }
-        }
-        
-        // 加载用户列表
-        async function loadUsers() {
-            try {
-                const response = await fetch(`${API_BASE}/api/users`);
-                const users = await response.json();
-                
-                if (!Array.isArray(users)) return;
-                
-                allUsers = users;
-                
-                // 排序：当前用户在前，其他用户按字母排序
-                const sortedUsers = users.sort((a, b) => {
-                    if (a === currentUser) return -1;
-                    if (b === currentUser) return 1;
-                    return a.localeCompare(b);
-                });
-                
-                userList.innerHTML = sortedUsers.map(user => {
-                    const isCurrentUserItem = user === currentUser;
-                    const statusClass = isCurrentUserItem ? 'current' : 'online';
-                    const itemClass = isCurrentUserItem ? 'current-user' : '';
-                    
-                    return `
-                        <div class="user-item ${itemClass}">
-                            <div class="user-avatar-small" ${!isCurrentUserItem ? `onclick="startPrivateChat('${escapeHTML(user)}')"` : ''} title="${isCurrentUserItem ? '这是你' : '点击开始私聊'}">
-                                ${escapeHTML(user.charAt(0).toUpperCase())}
-                            </div>
-                            <div class="user-name">${escapeHTML(user)}${isCurrentUserItem ? ' (我)' : ''}</div>
-                        </div>
-                    `;
-                }).join('');
-                
-                onlineCount.textContent = users.length;
-                
-            } catch (error) {
-                console.error("用户列表加载失败:", error);
-            }
-        }
-        
-        // 加载消息
-        async function loadMessages() {
-            try {
-                const response = await fetch(`${API_BASE}/api/messages?user=${encodeURIComponent(currentUser)}&roomId=${currentRoom}`);
-                const messages = await response.json();
-                
-                if (!Array.isArray(messages)) {
-                    console.error("消息格式错误:", messages);
-                    return;
-                }
-                
-                // 存储消息到房间缓存
-                const previousMessages = roomMessages.get(currentRoom) || [];
-                roomMessages.set(currentRoom, messages);
-                
-                // 检查新消息（仅当不是第一次加载时）
-                if (!firstLoad && messages.length > previousMessages.length) {
-                    const newMessagesCount = messages.length - previousMessages.length;
-                    
-                    // 如果窗口失去焦点或不在当前房间，显示通知
-                    if (!isWindowFocused) {
-                        const roomName = currentRoomType === 'public' ? '大厅' : `与${currentChatTarget}的私聊`;
-                        showNotification(`${roomName}有${newMessagesCount}条新消息`);
+                const response = await fetch(`${API_BASE}/get-messages?roomId=${roomId}&lastId=${lastMessageIds[roomId] || ''}`);
+                if (!response.ok) throw new Error('获取消息失败');
+                const newMessages = await response.json();
+                if (newMessages.length > 0) {
+                    newMessages.forEach(msg => {
+                        renderMessage(msg);
+                    });
+                    lastMessageIds[roomId] = newMessages[newMessages.length - 1].id;
+                    if (roomId === currentRoomId) {
+                        scrollToBottom();
                     }
                 }
-                
-                // 显示/隐藏空状态
-                if (messages.length === 0) {
-                    emptyState.style.display = 'flex';
-                    updateEmptyStateText();
-                } else {
-                    emptyState.style.display = 'none';
-                }
-                
-                // 保存滚动位置
-                const isAtBottom = Math.abs(messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight) < 50;
-                
-                // 渲染消息
-                renderMessages(messages);
-                
-                // 恢复滚动位置
-                if (isAtBottom || firstLoad) {
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }
-                
-                firstLoad = false;
             } catch (error) {
-                console.error("消息加载失败:", error);
+                console.error(`Error fetching messages for room ${roomId}:`, error);
             }
         }
         
-        // 加载房间列表
-        async function loadRooms() {
+        // 获取所有相关消息
+        async function fetchAllMessages() {
+            const roomIds = [currentRoomId, ...Object.keys(lastMessageIds).filter(id => id !== 'public' && id !== currentRoomId)];
+            
             try {
-                const response = await fetch(`${API_BASE}/api/rooms?user=${encodeURIComponent(currentUser)}`);
-                const rooms = await response.json();
+                const queryParams = new URLSearchParams();
+                roomIds.forEach(id => queryParams.append('roomIds', id));
+                Object.keys(lastMessageIds).forEach(id => queryParams.append(`lastId_${id}`, lastMessageIds[id] || ''));
+
+                const response = await fetch(`${API_BASE}/get-messages?${queryParams.toString()}`);
+                if (!response.ok) throw new Error('获取消息失败');
                 
-                if (!Array.isArray(rooms)) {
-                    allRooms = [];
-                    updateRoomList();
-                    return;
-                }
+                const allMessages = await response.json();
                 
-                allRooms = rooms;
-                
-                // 检查其他房间的新消息
-                for (const room of rooms) {
-                    if (room.id !== currentRoom) {
-                        const cachedMessages = roomMessages.get(room.id) || [];
-                        const lastMessage = room.lastMessage;
-                        
-                        if (lastMessage && (!cachedMessages.length || 
-                            new Date(lastMessage.time) > new Date(cachedMessages[cachedMessages.length - 1]?.time || 0))) {
-                            // 有新消息，增加未读计数
-                            const currentUnread = roomUnreadCount.get(room.id) || 0;
-                            roomUnreadCount.set(room.id, currentUnread + 1);
+                // 按房间处理消息
+                for (const roomId of Object.keys(allMessages)) {
+                    const newMessages = allMessages[roomId];
+                    if (newMessages.length > 0) {
+                        newMessages.forEach(msg => {
+                            if (roomId === currentRoomId) {
+                                renderMessage(msg);
+                            }
+                        });
+                        lastMessageIds[roomId] = newMessages[newMessages.length - 1].id;
+                        if (roomId === currentRoomId) {
+                            scrollToBottom();
                         }
                     }
                 }
-                
-                updateRoomList();
-                
+
             } catch (error) {
-                console.error("房间列表加载失败:", error);
+                console.error('Error fetching all messages:', error);
             }
         }
-        
-        // 更新房间列表显示
-        function updateRoomList() {
-            if (allRooms.length === 0) {
-                roomList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">点击用户头像开始私聊</div>';
-                roomCount.textContent = '0';
-                return;
-            }
-            
-            roomList.innerHTML = allRooms.map(room => {
-                const lastMsg = room.lastMessage;
-                const timeStr = lastMsg ? formatTime(lastMsg.time) : '';
-                const lastMsgPreview = lastMsg ? 
-                    (lastMsg.from === currentUser ? '我: ' : '') + lastMsg.content : 
-                    '暂无消息';
+
+        // 获取在线用户列表
+        async function fetchActiveUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/get-active-users`);
+                const activeUsers = await response.json();
                 
-                const isActive = currentRoom === room.id;
-                const unreadCount = roomUnreadCount.get(room.id) || 0;
+                usersList.innerHTML = `<div class="users-list-item" data-room-id="public">
+                    <div class="user-avatar">公</div>
+                    <div class="user-name">公共聊天室</div>
+                </div>`;
                 
-                return `
-                    <div class="room-item ${isActive ? 'active' : ''}" onclick="switchToRoom('${escapeHTML(room.id)}', '${escapeHTML(room.displayName)}')">
-                        <div class="user-avatar-small">${escapeHTML(room.displayName.charAt(0).toUpperCase())}</div>
-                        <div class="room-info">
-                            <div class="room-name">${escapeHTML(room.displayName)}</div>
-                            <div class="room-last-message">${escapeHTML(lastMsgPreview)}</div>
-                        </div>
-                        <div class="room-time">${timeStr}</div>
-                        ${unreadCount > 0 && !isActive ? `<div class="unread-badge">${unreadCount}</div>` : ''}
-                    </div>
-                `;
-            }).join('');
-            
-            roomCount.textContent = allRooms.length;
-        }
-        
-        // 渲染消息
-        function renderMessages(messages) {
-            const groupedMessages = groupMessagesByDate(messages);
-            let html = '';
-            
-            for (const [date, dailyMessages] of Object.entries(groupedMessages)) {
-                html += `<div class="message-date">${date}</div>`;
-                
-                dailyMessages.forEach(msg => {
-                    const messageId = `${msg.from}_${msg.time}_${msg.message.substring(0, 10)}`;
-                    const isNew = !animatedMessages.has(messageId);
-                    if (isNew) {
-                        animatedMessages.add(messageId);
-                    }
-                    html += createMessageHTML(msg, isNew && !firstLoad);
+                activeUsers.filter(u => u !== username).forEach(user => {
+                    const privateRoomId = [username, user].sort().join('_');
+                    lastMessageIds[privateRoomId] = lastMessageIds[privateRoomId] || null;
+                    const item = document.createElement('div');
+                    item.classList.add('users-list-item');
+                    item.dataset.roomId = privateRoomId;
+                    item.dataset.toUser = user;
+                    item.innerHTML = `
+                        <div class="user-avatar">${user.charAt(0).toUpperCase()}</div>
+                        <div class="user-name">${user}</div>
+                    `;
+                    usersList.appendChild(item);
                 });
-            }
-            
-            messagesContainer.innerHTML = html;
-        }
-        
-        // 按日期分组消息
-        function groupMessagesByDate(messages) {
-            const grouped = {};
-            const today = new Date().toDateString();
-            const yesterday = new Date(Date.now() - 86400000).toDateString();
-            
-            messages.forEach(msg => {
-                const date = new Date(msg.time);
-                const dateStr = date.toDateString();
                 
-                let displayDate;
-                if (dateStr === today) {
-                    displayDate = '今天';
-                } else if (dateStr === yesterday) {
-                    displayDate = '昨天';
-                } else {
-                    displayDate = date.toLocaleDateString('zh-CN', {
-                        month: 'long',
-                        day: 'numeric'
-                    });
+                // 重新激活当前房间
+                const currentItem = document.querySelector(`[data-room-id="${currentRoomId}"]`);
+                if (currentItem) {
+                    currentItem.classList.add('active');
+                    chatHeaderTitle.textContent = currentItem.dataset.toUser ? currentItem.dataset.toUser : '公共聊天室';
                 }
-                
-                if (!grouped[displayDate]) {
-                    grouped[displayDate] = [];
-                }
-                grouped[displayDate].push(msg);
-            });
-            
-            return grouped;
-        }
-        
-        // 创建消息HTML
-        function createMessageHTML(msg, isNew = false) {
-            const messageTime = new Date(msg.time);
-            const formattedTime = messageTime.toLocaleTimeString('zh-CN', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            const isCurrentUser = msg.from === currentUser;
-            const isPrivate = currentRoomType === 'private';
-            const messageClass = isCurrentUser ? 'self' : 'other';
-            const newClass = isNew ? 'new-message' : '';
-            
-            return `
-                <div class="message-item ${messageClass} ${newClass}">
-                    <div class="message-header">
-                        <span class="message-sender" onclick="startPrivateChat('${escapeHTML(msg.from)}')">${escapeHTML(msg.from)}</span>
-                        <span class="message-time">${formattedTime}</span>
-                        ${isPrivate ? '<span class="message-private">私聊</span>' : ''}
-                    </div>
-                    <div class="message-content">${escapeHTML(msg.message)}</div>
-                </div>
-            `;
-        }
-        
-        // 更新空状态文本
-        function updateEmptyStateText() {
-            const emptyTitle = emptyState.querySelector('.empty-title');
-            const emptyDescription = emptyState.querySelector('.empty-description');
-            
-            if (currentRoomType === 'private') {
-                emptyTitle.textContent = `与 ${currentChatTarget} 开始私聊吧！`;
-                emptyDescription.textContent = '在下方输入消息开始对话';
-            } else {
-                emptyTitle.textContent = '欢迎来到大厅！';
-                emptyDescription.textContent = '在下方输入消息，或点击用户头像开始私聊';
+            } catch (error) {
+                console.error('Error fetching active users:', error);
             }
         }
         
+        // 绑定用户列表点击事件
+        usersList.addEventListener('click', (e) => {
+            const item = e.target.closest('.users-list-item');
+            if (item) {
+                const roomId = item.dataset.roomId;
+                const toUser = item.dataset.toUser;
+                const title = toUser ? toUser : '公共聊天室';
+                const isPrivate = !!toUser;
+                switchRoom(roomId, title, isPrivate);
+            }
+        });
+
         // 发送消息
         async function sendMessage() {
             const message = messageInput.value.trim();
             if (!message) return;
-            
-            // 禁用发送按钮
-            sendButton.disabled = true;
-            
+
+            const isPrivate = currentRoomId !== 'public';
+            const toUser = isPrivate ? document.querySelector(`[data-room-id="${currentRoomId}"]`).dataset.toUser : null;
+
+            const messageObj = {
+                from: username,
+                message: message,
+                roomId: currentRoomId,
+                to: toUser
+            };
+
             try {
-                const payload = {
-                    from: currentUser,
-                    message: message,
-                    roomId: currentRoom
-                };
-                
-                // 如果是私聊，添加接收者
-                if (currentRoomType === 'private') {
-                    payload.to = currentChatTarget;
-                }
-                
-                const response = await fetch(`${API_BASE}/api/send`, {
+                const response = await fetch(`${API_BASE}/send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(messageObj)
                 });
-                
+
                 if (response.ok) {
                     messageInput.value = '';
-                    messageInput.style.height = 'auto';
-                    
-                    // 立即刷新当前房间消息
-                    setTimeout(() => {
-                        loadMessages();
-                        loadRooms(); // 更新房间列表中的最后消息
-                    }, 100);
+                    // 立即拉取新消息，确保自己发送的消息能立刻显示
+                    fetchAllMessages();
                 } else {
-                    const result = await response.json();
-                    showNotification(result.error || "消息发送失败");
+                    alert('发送失败');
                 }
-                
             } catch (error) {
-                console.error("发送消息失败:", error);
-                showNotification("网络错误，消息发送失败");
-            } finally {
-                sendButton.disabled = false;
+                console.error('Error sending message:', error);
+                alert('发送失败');
             }
         }
-        
-        // 处理键盘事件
-        function handleKeydown(e) {
+
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
             }
-        }
-        
-        // 处理输入变化
-        function handleInputChange() {
-            // 自动调整高度
-            messageInput.style.height = 'auto';
-            const scrollHeight = messageInput.scrollHeight;
-            messageInput.style.height = Math.min(scrollHeight, 120) + 'px';
-        }
-        
-        // 开始私聊
-        function startPrivateChat(username) {
-            if (username === currentUser) return;
-            
-            const roomId = getRoomId(currentUser, username);
-            
-            // 清除该房间的未读消息
-            roomUnreadCount.set(roomId, 0);
-            
-            switchToPrivateRoom(roomId, username);
-            
-            // 移动端关闭侧边栏
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('active');
-            }
-        }
-        
-        // 切换到房间
-        function switchToRoom(roomId, roomName) {
-            // 清除该房间的未读消息
-            roomUnreadCount.set(roomId, 0);
-            
-            switchToPrivateRoom(roomId, roomName);
-            
-            // 移动端关闭侧边栏
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('active');
-            }
-        }
-        
-        // 切换到私聊房间
-        function switchToPrivateRoom(roomId, targetUser) {
-            currentRoom = roomId;
-            currentRoomType = 'private';
-            currentChatTarget = targetUser;
-            
-            updateChatHeader();
-            updateLobbyButton();
-            updateRoomActiveState();
-            loadMessages();
-            updateRoomList(); // 更新未读状态
-            messageInput.focus();
-        }
-        
-        // 切换到大厅
-        function switchToLobby() {
-            currentRoom = 'public';
-            currentRoomType = 'public';
-            currentChatTarget = '';
-            
-            updateChatHeader();
-            updateLobbyButton();
-            updateRoomActiveState();
-            loadMessages();
-            messageInput.focus();
-            
-            // 移动端关闭侧边栏
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('active');
-            }
-        }
-        
-        // 更新聊天头部
-        function updateChatHeader() {
-            if (currentRoomType === 'private') {
-                chatTitle.textContent = `与 ${currentChatTarget} 私聊`;
-                chatInfoText.textContent = '仅双方可见';
-                chatStatus.className = 'chat-status private';
-            } else {
-                chatTitle.textContent = '大厅聊天';
-                chatInfoText.textContent = '所有用户可见';
-                chatStatus.className = 'chat-status public';
-            }
-        }
-        
-        // 更新大厅按钮状态
-        function updateLobbyButton() {
-            if (currentRoomType === 'public') {
-                lobbyButton.classList.add('active');
-            } else {
-                lobbyButton.classList.remove('active');
-            }
-        }
-        
-        // 更新房间激活状态
-        function updateRoomActiveState() {
-            document.querySelectorAll('.room-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // 找到当前房间并标记为活跃
-            const activeRoomElement = document.querySelector(`[onclick*="${currentRoom}"]`);
-            if (activeRoomElement) {
-                activeRoomElement.classList.add('active');
-            }
-        }
-        
-        // 生成房间ID
-        function getRoomId(user1, user2) {
-            return [user1, user2].sort().join('_');
-        }
-        
-        // 显示通知
-        function showNotification(text) {
-            notificationText.textContent = text;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                hideNotification();
-            }, 4000);
-        }
-        
-        // 隐藏通知
-        function hideNotification() {
-            notification.classList.remove('show');
-        }
-        
-        // 格式化时间
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / (1000 * 60));
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            
-            if (diffMins < 1) {
-                return '刚刚';
-            } else if (diffMins < 60) {
-                return `${diffMins}分钟前`;
-            } else if (diffHours < 24) {
-                return `${diffHours}小时前`;
-            } else if (diffDays === 1) {
-                return '昨天';
-            } else if (diffDays < 7) {
-                return `${diffDays}天前`;
-            } else {
-                return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
-            }
-        }
-        
-        // HTML转义
-        function escapeHTML(str) {
-            if (typeof str !== 'string') return '';
-            return str
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-        
-        // 退出登录
-        function logout() {
-            if (confirm('确定要退出登录吗？')) {
-                localStorage.removeItem('currentUser');
-                if (pollInterval) {
-                    clearInterval(pollInterval);
-                }
-                window.location.href = 'auth.html';
-            }
-        }
-        
-        // 页面卸载时清理
-        window.addEventListener('beforeunload', () => {
-            if (pollInterval) {
-                clearInterval(pollInterval);
-            }
         });
         
-        // 初始化应用
-        init();
+        // 更新活跃状态
+        async function updateActiveStatus() {
+            try {
+                await fetch(`${API_BASE}/active`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+            } catch (error) {
+                console.error('Failed to update active status:', error);
+            }
+        }
+
+        // 首次加载
+        updateActiveStatus();
+        fetchActiveUsers();
+        fetchMessages(currentRoomId);
         
-        // 全局函数，供HTML onclick调用
-        window.startPrivateChat = startPrivateChat;
-        window.switchToRoom = switchToRoom;
+        // 设置定时拉取，每0.8秒一次
+        setInterval(() => {
+            updateActiveStatus();
+            fetchActiveUsers();
+            fetchAllMessages();
+        }, 800);
     </script>
 </body>
 </html>
