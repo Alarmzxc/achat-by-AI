@@ -91,246 +91,272 @@
     <script src="https://cdn.jsdelivr.net/npm/leancloud-realtime/dist/realtime-min.js"></script>
 
     <script>
-        // ------------------------------------------
-        // 第一步：在这里替换你的 LeanCloud 应用密钥！
-        // ------------------------------------------
-        const appId = 'RBBNqtzQUZR27gCRcoMKoQ24-MdYXbMMI';
-        const appKey = 'XAhHmhlZkKrIHdooV32jc2FZ';
-        
-        // ------------------------------------------
-        // 第二步：初始化 LeanCloud SDK
-        // ------------------------------------------
-        AV.init({
-            appId: appId,
-            appKey: appKey,
-            serverURLs: 'https://rbbnqtzq.api.lncldglobal.com' // 国际版默认 API 服务器
-        });
-        const Realtime = AV.Realtime;
+// ------------------------------------------
+    // 第一步：在这里替换你的 LeanCloud 应用密钥！
+    // ------------------------------------------
+    const appId = 'YOUR_APP_ID';
+    const appKey = 'YOUR_APP_KEY';
+    
+    // ------------------------------------------
+    // 第二步：初始化 LeanCloud SDK
+    // ------------------------------------------
+    AV.init({
+        appId: appId,
+        appKey: appKey,
+        serverURLs: 'https://' + appId.substring(0, 8).toLowerCase() + '.api.lncldglobal.com'
+    });
+    const Realtime = AV.Realtime;
 
-        // 全局变量
-        let realtimeClient = null;
-        let currentConversation = null;
+    // 全局变量
+    let realtimeClient = null;
+    let currentConversation = null;
 
-        // DOM 元素
-        const authSection = document.getElementById('auth-section');
-        const appSection = document.getElementById('app');
-        const currentUserSpan = document.getElementById('current-user');
-        const registerForm = document.getElementById('register-form');
-        const loginForm = document.getElementById('login-form');
-        const logoutButton = document.getElementById('logout-button');
-        const createRoomForm = document.getElementById('create-room');
-        const joinRoomForm = document.getElementById('join-room');
-        const publicRoomsList = document.getElementById('public-rooms');
-        const messagesDiv = document.getElementById('messages');
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
+    // DOM 元素
+    const authSection = document.getElementById('auth-section');
+    const appSection = document.getElementById('app');
+    const currentUserSpan = document.getElementById('current-user');
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    const logoutButton = document.getElementById('logout-button');
+    const createRoomForm = document.getElementById('create-room');
+    const joinRoomForm = document.getElementById('join-room');
+    const publicRoomsList = document.getElementById('public-rooms');
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
 
-        // 检查用户登录状态
-        function checkLoginStatus() {
-            const user = AV.User.current();
-            if (user) {
-                authSection.style.display = 'none';
-                appSection.style.display = 'block';
-                currentUserSpan.textContent = user.getUsername();
-                initRealtimeClient(user);
-                fetchPublicChatRooms();
-            } else {
-                authSection.style.display = 'block';
-                appSection.style.display = 'none';
+    // 禁用所有聊天室操作，直到IM客户端登录成功
+    function setChatControlsEnabled(enabled) {
+        document.querySelectorAll('#create-room button, #join-room button, .room-item').forEach(el => {
+            el.disabled = !enabled;
+            if (el.tagName === 'LI') {
+                el.style.cursor = enabled ? 'pointer' : 'not-allowed';
+                el.style.opacity = enabled ? '1' : '0.5';
             }
+        });
+        messageInput.disabled = !enabled;
+        sendButton.disabled = !enabled;
+    }
+
+    // 检查用户登录状态，并初始化IM服务
+    async function checkLoginStatus() {
+        const user = AV.User.current();
+        if (user) {
+            authSection.style.display = 'none';
+            appSection.style.display = 'block';
+            currentUserSpan.textContent = user.getUsername();
+
+            setChatControlsEnabled(false); // 登录成功后先禁用操作
+
+            try {
+                // 等待IM客户端登录成功
+                await initRealtimeClient(user);
+                console.log('IM客户端已成功登录，可以进行聊天室操作。');
+                setChatControlsEnabled(true); // 启用操作
+                await fetchPublicChatRooms();
+            } catch (error) {
+                console.error('初始化IM客户端失败:', error);
+                alert('IM服务登录失败，请检查网络或重试。');
+            }
+
+        } else {
+            authSection.style.display = 'block';
+            appSection.style.display = 'none';
         }
+    }
 
-        // ------------------------------------------
-        // 用户认证功能
-        // ------------------------------------------
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = e.target.elements['reg-username'].value;
-            const password = e.target.elements['reg-password'].value;
-            const user = new AV.User();
-            user.setUsername(username);
-            user.setPassword(password);
-            try {
-                await user.signUp();
-                alert('注册成功！请登录。');
-                e.target.reset();
-            } catch (error) {
-                alert('注册失败: ' + error.rawMessage);
-                console.error('注册失败', error);
-            }
-        });
+    // ------------------------------------------
+    // 用户认证功能
+    // ------------------------------------------
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = e.target.elements['reg-username'].value;
+        const password = e.target.elements['reg-password'].value;
+        const user = new AV.User();
+        user.setUsername(username);
+        user.setPassword(password);
+        try {
+            await user.signUp();
+            alert('注册成功！请登录。');
+            e.target.reset();
+        } catch (error) {
+            alert('注册失败: ' + error.rawMessage);
+            console.error('注册失败', error);
+        }
+    });
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = e.target.elements['login-username'].value;
-            const password = e.target.elements['login-password'].value;
-            try {
-                await AV.User.logIn(username, password);
-                alert('登录成功！');
-                checkLoginStatus();
-            } catch (error) {
-                alert('登录失败: ' + error.rawMessage);
-                console.error('登录失败', error);
-            }
-        });
-
-        logoutButton.addEventListener('click', async () => {
-            await AV.User.logOut();
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = e.target.elements['login-username'].value;
+        const password = e.target.elements['login-password'].value;
+        try {
+            await AV.User.logIn(username, password);
+            alert('登录成功！');
             checkLoginStatus();
-            // 清理聊天室状态
-            realtimeClient = null;
-            currentConversation = null;
-            messagesDiv.innerHTML = '';
-            messageInput.value = '';
-            messageInput.disabled = true;
-            sendButton.disabled = true;
-        });
-
-        // ------------------------------------------
-        // 聊天室管理功能
-        // ------------------------------------------
-        createRoomForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const roomName = e.target.elements['room-name'].value;
-            const customCode = e.target.elements['invitation-code'].value;
-            const isPublic = e.target.elements['is-public'].checked;
-
-            const invitationCode = customCode || Math.random().toString(36).substring(2, 8).toUpperCase();
-            
-            const ChatRoom = AV.Object.extend('ChatRoom');
-            const chatRoom = new ChatRoom();
-            chatRoom.set('name', roomName);
-            chatRoom.set('creator', AV.User.current());
-            chatRoom.set('isPublic', isPublic);
-            chatRoom.set('invitationCode', invitationCode);
-
-            try {
-                const newRoom = await chatRoom.save();
-                alert('聊天室创建成功！邀请码为: ' + invitationCode);
-                e.target.reset();
-                if (isPublic) {
-                    fetchPublicChatRooms(); // 刷新公开聊天室列表
-                }
-            } catch (error) {
-                alert('创建失败，邀请码可能已存在或发生其他错误: ' + error.rawMessage);
-                console.error('创建失败', error);
-            }
-        });
-
-        joinRoomForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const joinCode = e.target.elements['join-code'].value.toUpperCase();
-            const query = new AV.Query('ChatRoom');
-            query.equalTo('invitationCode', joinCode);
-            try {
-                const chatRoom = await query.first();
-                if (chatRoom) {
-                    enterChatRoom(chatRoom.id);
-                    alert('已进入聊天室: ' + chatRoom.get('name'));
-                } else {
-                    alert('未找到该邀请码对应的聊天室');
-                }
-            } catch (error) {
-                alert('查询失败: ' + error.rawMessage);
-                console.error('查询失败', error);
-            }
-        });
-
-        // 获取并渲染公开聊天室列表
-        async function fetchPublicChatRooms() {
-            publicRoomsList.innerHTML = ''; // 清空列表
-            const query = new AV.Query('ChatRoom');
-            query.equalTo('isPublic', true);
-            query.descending('createdAt');
-            try {
-                const rooms = await query.find();
-                rooms.forEach(room => {
-                    const li = document.createElement('li');
-                    li.classList.add('room-item');
-                    li.textContent = room.get('name');
-                    li.onclick = () => {
-                        enterChatRoom(room.id);
-                        alert('已进入聊天室: ' + room.get('name'));
-                    };
-                    publicRoomsList.appendChild(li);
-                });
-            } catch (error) {
-                console.error('获取公开聊天室失败', error);
-            }
+        } catch (error) {
+            alert('登录失败: ' + error.rawMessage);
+            console.error('登录失败', error);
         }
+    });
 
-        // ------------------------------------------
-        // 实时通讯功能
-        // ------------------------------------------
-        async function initRealtimeClient(user) {
-            if (realtimeClient) return;
-            try {
-                const realtime = new Realtime({ appId: appId, appKey: appKey });
-                realtimeClient = await realtime.createIMClient(user.id);
-                console.log('IM 客户端登录成功');
-            } catch (error) {
-                console.error('IM 客户端登录失败', error);
-            }
-        }
-
-        async function enterChatRoom(chatRoomId) {
-            messagesDiv.innerHTML = ''; // 清空消息区域
-            if (!realtimeClient) {
-                alert('请先登录IM服务');
-                return;
-            }
-            try {
-                const conversation = await realtimeClient.getConversation(chatRoomId);
-                currentConversation = conversation;
-                messageInput.disabled = false;
-                sendButton.disabled = false;
-                
-                // 监听新消息
-                currentConversation.on('message', (message, convo) => {
-                    if (message.from !== AV.User.current().id) {
-                        appendMessage(message.from, message.text);
-                    }
-                });
-
-                // 获取历史消息
-                const history = await conversation.queryMessages({ limit: 50 });
-                history.forEach(msg => {
-                    appendMessage(msg.from, msg.text);
-                });
-            } catch (error) {
-                alert('进入聊天室失败: ' + error.message);
-                console.error('进入聊天室失败', error);
-            }
-        }
-
-        sendButton.addEventListener('click', async () => {
-            const text = messageInput.value.trim();
-            if (text && currentConversation) {
-                const message = new AV.TextMessage(text);
-                try {
-                    await currentConversation.send(message);
-                    appendMessage(AV.User.current().id, text);
-                    messageInput.value = '';
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                } catch (error) {
-                    alert('消息发送失败: ' + error.message);
-                    console.error('消息发送失败', error);
-                }
-            }
-        });
-
-        function appendMessage(from, text) {
-            const messageItem = document.createElement('div');
-            messageItem.classList.add('message-item');
-            const username = from === AV.User.current().id ? '我' : '用户 ' + from.substring(0, 6);
-            messageItem.innerHTML = `<strong>${username}:</strong> ${text}`;
-            messagesDiv.appendChild(messageItem);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        // 初始化
+    logoutButton.addEventListener('click', async () => {
+        await AV.User.logOut();
         checkLoginStatus();
-    </script>
+        // 清理聊天室状态
+        realtimeClient = null;
+        currentConversation = null;
+        messagesDiv.innerHTML = '';
+        messageInput.value = '';
+        setChatControlsEnabled(false);
+    });
+
+    // ------------------------------------------
+    // 聊天室管理功能
+    // ------------------------------------------
+    createRoomForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const roomName = e.target.elements['room-name'].value;
+        const customCode = e.target.elements['invitation-code'].value;
+        const isPublic = e.target.elements['is-public'].checked;
+
+        const invitationCode = customCode || Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        const ChatRoom = AV.Object.extend('ChatRoom');
+        const chatRoom = new ChatRoom();
+        chatRoom.set('name', roomName);
+        chatRoom.set('creator', AV.User.current());
+        chatRoom.set('isPublic', isPublic);
+        chatRoom.set('invitationCode', invitationCode);
+
+        try {
+            const newRoom = await chatRoom.save();
+            alert('聊天室创建成功！邀请码为: ' + invitationCode);
+            e.target.reset();
+            if (isPublic) {
+                fetchPublicChatRooms(); // 刷新公开聊天室列表
+            }
+        } catch (error) {
+            alert('创建失败，邀请码可能已存在或发生其他错误: ' + error.rawMessage);
+            console.error('创建失败', error);
+        }
+    });
+
+    joinRoomForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const joinCode = e.target.elements['join-code'].value.toUpperCase();
+        const query = new AV.Query('ChatRoom');
+        query.equalTo('invitationCode', joinCode);
+        try {
+            const chatRoom = await query.first();
+            if (chatRoom) {
+                enterChatRoom(chatRoom.id);
+                alert('已进入聊天室: ' + chatRoom.get('name'));
+            } else {
+                alert('未找到该邀请码对应的聊天室');
+            }
+        } catch (error) {
+            alert('查询失败: ' + error.rawMessage);
+            console.error('查询失败', error);
+        }
+    });
+
+    async function fetchPublicChatRooms() {
+        publicRoomsList.innerHTML = ''; // 清空列表
+        const query = new AV.Query('ChatRoom');
+        query.equalTo('isPublic', true);
+        query.descending('createdAt');
+        try {
+            const rooms = await query.find();
+            rooms.forEach(room => {
+                const li = document.createElement('li');
+                li.classList.add('room-item');
+                li.textContent = room.get('name');
+                li.onclick = () => {
+                    enterChatRoom(room.id);
+                    alert('已进入聊天室: ' + room.get('name'));
+                };
+                publicRoomsList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('获取公开聊天室失败', error);
+        }
+    }
+
+    // ------------------------------------------
+    // 实时通讯功能
+    // ------------------------------------------
+    async function initRealtimeClient(user) {
+        if (realtimeClient) return; // 防止重复初始化
+        try {
+            const realtime = new Realtime({ appId: appId, appKey: appKey });
+            realtimeClient = await realtime.createIMClient(user.id);
+            console.log('IM 客户端登录成功');
+        } catch (error) {
+            console.error('IM 客户端登录失败', error);
+            throw error; // 向上抛出错误，让调用者知道失败了
+        }
+    }
+
+    async function enterChatRoom(chatRoomId) {
+        messagesDiv.innerHTML = ''; // 清空消息区域
+        if (!realtimeClient) {
+            // 这个判断在优化后应该很少触发，但作为保险仍然保留
+            alert('请先登录IM服务');
+            return;
+        }
+        try {
+            const conversation = await realtimeClient.getConversation(chatRoomId);
+            currentConversation = conversation;
+            messageInput.disabled = false;
+            sendButton.disabled = false;
+            
+            // 监听新消息
+            currentConversation.on('message', (message, convo) => {
+                if (message.from !== AV.User.current().id) {
+                    appendMessage(message.from, message.text);
+                }
+            });
+
+            // 获取历史消息
+            const history = await conversation.queryMessages({ limit: 50 });
+            history.forEach(msg => {
+                appendMessage(msg.from, msg.text);
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        } catch (error) {
+            alert('进入聊天室失败: ' + error.message);
+            console.error('进入聊天室失败', error);
+        }
+    }
+
+    sendButton.addEventListener('click', async () => {
+        const text = messageInput.value.trim();
+        if (text && currentConversation) {
+            const message = new AV.TextMessage(text);
+            try {
+                await currentConversation.send(message);
+                appendMessage(AV.User.current().id, text);
+                messageInput.value = '';
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (error) {
+                alert('消息发送失败: ' + error.message);
+                console.error('消息发送失败', error);
+            }
+        }
+    });
+
+    function appendMessage(from, text) {
+        const messageItem = document.createElement('div');
+        messageItem.classList.add('message-item');
+        const username = from === AV.User.current().id ? '我' : '用户 ' + from.substring(0, 6);
+        messageItem.innerHTML = `<strong>${username}:</strong> ${text}`;
+        messagesDiv.appendChild(messageItem);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // 初始化
+    checkLoginStatus();    
+</script>
 
 </body>
 </html>
