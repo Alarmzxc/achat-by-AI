@@ -90,8 +90,8 @@
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-realtime/dist/realtime-min.js"></script>
 
-    <script>
-// ------------------------------------------
+<script>
+    // ------------------------------------------
     // 第一步：在这里替换你的 LeanCloud 应用密钥！
     // ------------------------------------------
     const appId = 'RBBNqtzQUZR27gCRcoMKoQ24-MdYXbMMI';
@@ -289,10 +289,15 @@
         if (realtimeClient) return; // 防止重复初始化
         try {
             const realtime = new Realtime({ appId: appId, appKey: appKey });
+            console.log('正在尝试创建 IM 客户端...');
             realtimeClient = await realtime.createIMClient(user.id);
             console.log('IM 客户端登录成功');
         } catch (error) {
-            console.error('IM 客户端登录失败', error);
+            console.error('IM 客户端登录失败，详细错误信息:', error);
+            // 如果有 rawMessage，通常是 LeanCloud 服务器返回的错误
+            if (error.rawMessage) {
+                console.error('服务器返回的错误:', error.rawMessage);
+            }
             throw error; // 向上抛出错误，让调用者知道失败了
         }
     }
@@ -300,7 +305,6 @@
     async function enterChatRoom(chatRoomId) {
         messagesDiv.innerHTML = ''; // 清空消息区域
         if (!realtimeClient) {
-            // 这个判断在优化后应该很少触发，但作为保险仍然保留
             alert('请先登录IM服务');
             return;
         }
