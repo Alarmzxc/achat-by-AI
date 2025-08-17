@@ -1,208 +1,192 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>LeanCloud 安全聊天室</title>
-<link rel="icon" href="./image/favicon.ico">
-<style>
-body { font-family: Arial, sans-serif; background: #f3f6fb; margin: 0; padding: 0; }
-.container { max-width: 1100px; margin: auto; padding: 20px; }
-header { text-align: center; margin-bottom: 10px; }
-h1 { color: #1877f2; margin: 0; }
-section { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-label { display: block; margin-top: 8px; }
-input[type="text"], input[type="password"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; }
-button { background: #1877f2; color: white; border: none; padding: 8px 16px; margin-top: 10px; border-radius: 4px; cursor: pointer; }
-button:disabled { background: #aaa; }
-#messages { border: 1px solid #ddd; border-radius: 4px; padding: 10px; height: 300px; overflow-y: auto; background: #fafafa; }
-.message { margin-bottom: 8px; }
-.msg-self { text-align: right; }
-.msg-bubble { display: inline-block; padding: 6px 10px; border-radius: 6px; background: #fff; }
-.msg-self .msg-bubble { background: #DCFCE7; }
-.room-item { padding: 6px; border-bottom: 1px solid #eee; cursor: pointer; }
-.room-item:hover { background: #f5f5f5; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天室 - Cloudflare</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --text: #2c3e50;
+            --background: #f0f2f5;
+            --card-bg: #ffffff;
+            --border: #dee2e6;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        body { font-family: -apple-system, sans-serif; background: var(--background); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { width: 100%; max-width: 400px; padding: 1rem; }
+        .card { background: var(--card-bg); border-radius: 1rem; box-shadow: var(--shadow); padding: 2rem; }
+        .card h2 { text-align: center; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group input { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; box-sizing: border-box; }
+        .button { width: 100%; padding: 0.75rem; background-color: var(--primary); color: white; border: none; border-radius: 0.5rem; cursor: pointer; }
+        .message { text-align: center; margin-top: 1rem; }
+
+        /* Chat */
+        .chat-container { width: 100%; max-width: 900px; height: 90vh; display: flex; background: var(--card-bg); border-radius: 1rem; box-shadow: var(--shadow); }
+        .sidebar { width: 250px; border-right: 1px solid var(--border); overflow-y: auto; padding: 1rem; }
+        .sidebar h3 { margin-bottom: 1rem; }
+        .user-list-item { padding: 0.5rem; cursor: pointer; border-radius: 0.5rem; }
+        .user-list-item:hover, .user-list-item.active { background: var(--background); }
+        .chat-main { flex-grow: 1; display: flex; flex-direction: column; }
+        .chat-header { padding: 1rem; border-bottom: 1px solid var(--border); text-align: center; }
+        .chat-box { flex-grow: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .chat-input { display: flex; padding: 1rem; border-top: 1px solid var(--border); }
+        .chat-input input { flex-grow: 1; margin-right: 0.5rem; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; }
+        .message-item { background: var(--background); padding: 0.5rem 1rem; border-radius: 1rem; max-width: 70%; }
+        .message-item.sent { align-self: flex-end; background: var(--primary); color: white; }
+        .message-item.received { align-self: flex-start; }
+    </style>
 </head>
 <body>
-<div class="container">
-<header>
-  <h1>LeanCloud 聊天室</h1>
-  <p>基于云引擎的安全聊天室示例</p>
-</header>
+    <div id="auth-page" class="container">
+        <div class="card">
+            <h2>登录 / 注册</h2>
+            <form id="auth-form">
+                <div class="form-group">
+                    <input type="text" id="username" placeholder="用户名" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="密码" required>
+                </div>
+                <button type="submit" class="button" id="auth-button">登录 / 注册</button>
+                <div id="auth-message" class="message"></div>
+            </form>
+        </div>
+    </div>
 
-<section id="auth-section">
-  <h3>用户认证</h3>
-  <div>
-    <label>用户名</label>
-    <input type="text" id="login-username">
-    <label>密码</label>
-    <input type="password" id="login-password">
-    <button id="login-btn">登录</button>
-    <button id="register-btn">注册</button>
-    <button id="logout-btn" style="display:none;">登出</button>
-    <p>当前用户：<span id="current-user"></span></p>
-  </div>
-</section>
+    <div id="chat-page" class="chat-container" style="display: none;">
+        <div class="sidebar">
+            <h3>在线用户</h3>
+            <div id="user-list"></div>
+        </div>
+        <div class="chat-main">
+            <div class="chat-header">
+                <h3 id="chat-room-name">公共聊天室</h3>
+            </div>
+            <div id="chat-box" class="chat-box"></div>
+            <div class="chat-input">
+                <input type="text" id="message-input" placeholder="输入消息...">
+                <button class="button" id="send-button">发送</button>
+            </div>
+        </div>
+    </div>
 
-<section id="room-section" style="display:none;">
-  <h3>房间管理</h3>
-  <label>房间名称</label>
-  <input type="text" id="room-name">
-  <label>邀请码（可选）</label>
-  <input type="text" id="invitation-code">
-  <label><input type="checkbox" id="is-public"> 公开聊天室</label>
-  <button id="create-room-btn">创建聊天室</button>
+    <script>
+        const API_URL = window.location.origin;
+        let currentUser = localStorage.getItem('username');
+        let currentRoomId = 'public';
+        let isChatPage = window.location.hash === '#chat';
 
-  <h4>加入聊天室</h4>
-  <label>邀请码</label>
-  <input type="text" id="join-code">
-  <button id="join-room-btn">加入</button>
+        const showMessage = (elementId, msg, isError) => {
+            const element = document.getElementById(elementId);
+            element.textContent = msg;
+            element.style.color = isError ? 'red' : 'green';
+        };
 
-  <h4>公开聊天室</h4>
-  <div id="public-rooms"></div>
-</section>
+        const renderPage = () => {
+            document.getElementById('auth-page').style.display = isChatPage ? 'none' : 'flex';
+            document.getElementById('chat-page').style.display = isChatPage ? 'flex' : 'none';
+        };
 
-<section id="chat-section" style="display:none;">
-  <h3 id="chat-title">聊天室</h3>
-  <div id="messages"></div>
-  <input type="text" id="message-input" placeholder="输入消息...">
-  <button id="send-btn">发送</button>
-</section>
-</div>
+        const fetchUsers = async () => {
+            const userListDiv = document.getElementById('user-list');
+            userListDiv.innerHTML = '';
+            const response = await fetch(`${API_URL}/api/users`);
+            const users = await response.json();
+            users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = `user-list-item ${user === currentRoomId ? 'active' : ''}`;
+                userItem.textContent = user;
+                userItem.addEventListener('click', () => switchRoom(user));
+                userListDiv.appendChild(userItem);
+            });
+        };
 
-<script src="https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leancloud-realtime/dist/realtime-min.js"></script>
-<script>
-// 配置
-const APP_ID = 'YOU_APP_ID';
-const APP_KEY = 'YOU_APP_KEY';
-const SERVER_URL = 'https://rbbnqtzq.api.lncldglobal.com';
-AV.init({ appId: APP_ID, appKey: APP_KEY, serverURLs: SERVER_URL });
-const Realtime = AV.Realtime;
+        const fetchMessages = async () => {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            const response = await fetch(`${API_URL}/api/messages?room=${currentRoomId}`);
+            const messages = await response.json();
+            messages.forEach(msg => {
+                const messageItem = document.createElement('div');
+                messageItem.className = `message-item ${msg.sender === currentUser ? 'sent' : 'received'}`;
+                messageItem.textContent = `${msg.sender}: ${msg.content}`;
+                chatBox.appendChild(messageItem);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
 
-// DOM
-const loginBtn = document.getElementById('login-btn');
-const registerBtn = document.getElementById('register-btn');
-const logoutBtn = document.getElementById('logout-btn');
-const currentUserSpan = document.getElementById('current-user');
-const roomSection = document.getElementById('room-section');
-const chatSection = document.getElementById('chat-section');
-const messagesDiv = document.getElementById('messages');
-const publicRoomsDiv = document.getElementById('public-rooms');
-let realtimeClient = null;
-let currentConversation = null;
+        const switchRoom = (room) => {
+            currentRoomId = room;
+            document.getElementById('chat-room-name').textContent = room === 'public' ? '公共聊天室' : `与 ${room} 的私聊`;
+            document.querySelectorAll('.user-list-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.user-list-item[data-user="${room}"]`)?.classList.add('active');
+            fetchMessages();
+        };
 
-// 登录
-loginBtn.onclick = async () => {
-  const username = document.getElementById('login-username').value;
-  const password = document.getElementById('login-password').value;
-  try {
-    await AV.User.logIn(username, password);
-    afterLogin();
-  } catch(e) { alert('登录失败: ' + e.message); }
-};
-// 注册
-registerBtn.onclick = async () => {
-  const username = document.getElementById('login-username').value;
-  const password = document.getElementById('login-password').value;
-  const user = new AV.User();
-  user.setUsername(username);
-  user.setPassword(password);
-  try { await user.signUp(); alert('注册成功，请登录'); } 
-  catch(e) { alert('注册失败: ' + e.message); }
-};
-// 登出
-logoutBtn.onclick = async () => {
-  await AV.User.logOut();
-  currentUserSpan.textContent = '';
-  logoutBtn.style.display = 'none';
-  roomSection.style.display = 'none';
-  chatSection.style.display = 'none';
-};
+        if (isChatPage && currentUser) {
+            renderPage();
+            fetchUsers();
+            fetchMessages();
+            setInterval(fetchMessages, 1500); // 消息轮询
+            setInterval(fetchUsers, 5000); // 用户列表轮询
+            window.addEventListener('beforeunload', () => {
+                navigator.sendBeacon(`${API_URL}/api/offline`, JSON.stringify({ username: currentUser }));
+            });
+        } else {
+            renderPage();
+        }
 
-// 登录后初始化
-async function afterLogin() {
-  const user = AV.User.current();
-  currentUserSpan.textContent = user.getUsername();
-  logoutBtn.style.display = 'inline-block';
-  roomSection.style.display = 'block';
-  realtimeClient = await new Realtime({ appId: APP_ID, appKey: APP_KEY }).createIMClient(user.id);
-  fetchPublicRooms();
-}
+        // 认证表单提交
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const button = document.getElementById('auth-button');
+            button.disabled = true;
 
-// 创建房间
-document.getElementById('create-room-btn').onclick = async () => {
-  const name = document.getElementById('room-name').value;
-  const invitationCode = document.getElementById('invitation-code').value || null;
-  const isPublic = document.getElementById('is-public').checked;
-  try {
-    const res = await AV.Cloud.run('createRoom', { name, invitationCode, isPublic });
-    alert('房间创建成功！邀请码：' + res.invitationCode);
-    enterConversation(res.conversationId, res.name);
-    fetchPublicRooms();
-  } catch(e) { alert('创建失败: ' + e.message); }
-};
+            try {
+                const response = await fetch(`${API_URL}/api/auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
 
-// 加入房间
-document.getElementById('join-room-btn').onclick = async () => {
-  const code = document.getElementById('join-code').value;
-  try {
-    const res = await AV.Cloud.run('getRoomByCode', { invitationCode: code });
-    if (!res) return alert('未找到房间');
-    enterConversation(res.conversationId, res.name);
-  } catch(e) { alert('加入失败: ' + e.message); }
-};
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('username', username);
+                    window.location.hash = '#chat';
+                    window.location.reload();
+                } else {
+                    showMessage('auth-message', result.error || '认证失败', true);
+                }
+            } catch (error) {
+                showMessage('auth-message', '网络错误，请稍后重试', true);
+            } finally {
+                button.disabled = false;
+            }
+        });
 
-// 获取公开房间
-async function fetchPublicRooms() {
-  try {
-    const res = await AV.Cloud.run('listPublicRooms', {});
-    publicRoomsDiv.innerHTML = '';
-    res.forEach(r => {
-      const div = document.createElement('div');
-      div.className = 'room-item';
-      div.textContent = `${r.name} (邀请码: ${r.invitationCode})`;
-      div.onclick = () => enterConversation(r.conversationId, r.name);
-      publicRoomsDiv.appendChild(div);
-    });
-  } catch(e) { publicRoomsDiv.textContent = '加载失败'; }
-}
+        // 发送消息
+        document.getElementById('send-button').addEventListener('click', async () => {
+            const input = document.getElementById('message-input');
+            const content = input.value;
+            if (content.trim() === '') return;
 
-// 进入会话
-async function enterConversation(cid, name) {
-  chatSection.style.display = 'block';
-  document.getElementById('chat-title').textContent = name;
-  messagesDiv.innerHTML = '';
-  currentConversation = await realtimeClient.getConversation(cid);
-  currentConversation.on('message', msg => appendMessage(msg.from, msg.text));
-  const history = await currentConversation.queryMessages({ limit: 50 });
-  history.forEach(m => appendMessage(m.from, m.text));
-}
+            await fetch(`${API_URL}/api/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sender: currentUser,
+                    receiver: currentRoomId,
+                    content
+                })
+            });
 
-// 发送消息
-document.getElementById('send-btn').onclick = async () => {
-  const text = document.getElementById('message-input').value.trim();
-  if (!text) return;
-  await currentConversation.send(new AV.TextMessage(text));
-  appendMessage(AV.User.current().id, text);
-  document.getElementById('message-input').value = '';
-};
-
-// 显示消息
-function appendMessage(from, text) {
-  const div = document.createElement('div');
-  div.className = 'message' + (from === AV.User.current().id ? ' msg-self' : '');
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.textContent = (from === AV.User.current().id ? '我：' : from + '：') + text;
-  div.appendChild(bubble);
-  messagesDiv.appendChild(div);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-// 初始化
-if (AV.User.current()) afterLogin();
-</script>
+            input.value = '';
+            fetchMessages();
+        });
+    </script>
 </body>
 </html>
